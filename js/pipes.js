@@ -93,7 +93,7 @@ export class PipeManager {
     roundRect(ctx, x, 0, W, topH - 10, 6);
     ctx.fill();
 
-    ctx.fillStyle = COLORS.pipe1;
+    ctx.fillStyle = COLORS.pipeCap;
     roundRect(ctx, x - 6, topH - 26, W + 12, 26, 8);
     ctx.fill();
     ctx.strokeStyle = COLORS.pipe2;
@@ -108,7 +108,7 @@ export class PipeManager {
     ctx.fillStyle = bGrad;
     roundRect(ctx, x, botY + 10, W, botH, 6);
     ctx.fill();
-    ctx.fillStyle = COLORS.pipe1;
+    ctx.fillStyle = COLORS.pipeCap;
     roundRect(ctx, x - 6, botY, W + 12, 26, 8);
     ctx.fill();
     ctx.strokeStyle = COLORS.pipe2;

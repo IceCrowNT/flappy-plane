@@ -9,13 +9,23 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+  <div id="sceneGlow"></div>
   <div id="gameWrapper">
+    <div id="topBar">
+      <div class="mode-pill">DUO FLIGHT</div>
+      <div class="mode-subtitle">Hand-painted sky chase</div>
+      <button id="btnAudio" class="sound-toggle" type="button">SOUND: ON</button>
+    </div>
     <div id="scoreBoard">
       <div id="scoreP1" class="score-card">P1 (W): <span id="scoreValP1">0</span></div>
       <div id="scoreP2" class="score-card">P2 (UP): <span id="scoreValP2">0</span></div>
     </div>
-    <canvas id="canvas" width="400" height="550"></canvas>
-    <div id="ui">SPACE OR CLICK TO START - P1: W - P2: ARROW UP</div>
+    <div id="frameShell">
+      <div class="frame-badge left">P1 W</div>
+      <div class="frame-badge right">P2 UP</div>
+      <canvas id="canvas" width="400" height="550"></canvas>
+    </div>
+    <div id="ui">SPACE OR CLICK TO START • P1: W • P2: ARROW UP</div>
     <div id="gameOverUi" style="display: none;">
       <button id="btnRestart" class="game-btn restart-btn">PLAY AGAIN (Space)</button>
     </div>

@@ -8,6 +8,7 @@ import { PipeManager } from './pipes.js';
 import { Background } from './background.js';
 import { ParticleSystem } from './particles.js';
 import { Overlay } from './overlay.js';
+import { AudioManager } from './audio.js';
 
 // ---- DOM ----
 const canvas = document.getElementById('canvas');
@@ -22,6 +23,7 @@ const scoreCards = {
 };
 const gameOverUi = document.getElementById('gameOverUi');
 const btnRestart = document.getElementById('btnRestart');
+const btnAudio = document.getElementById('btnAudio');
 
 // ---- STATE ----
 let state = 'idle';   // 'idle' | 'playing' | 'dead'
@@ -32,6 +34,7 @@ const bg = new Background();
 const pipes = new PipeManager();
 const particles = new ParticleSystem();
 const overlay = new Overlay();
+const audio = new AudioManager();
 const players = [
   {
     id: 'p1',
@@ -42,12 +45,12 @@ const players = [
     alive: true,
     plane: new Plane({
       x: 90,
-      stripeColor: '#7f5af0',
-      wingColor: '#c8b8f5',
-      wingInnerColor: '#d8ccff',
-      tailColor: '#9b79f0',
-      stabilizerColor: '#b09ee0',
-      trailHue: 200,
+      stripeColor: '#cc8657',
+      wingColor: '#f3d2a5',
+      wingInnerColor: '#f9e8c9',
+      tailColor: '#9f6647',
+      stabilizerColor: '#c9956f',
+      trailHue: 28,
     }),
   },
   {
@@ -59,12 +62,12 @@ const players = [
     alive: true,
     plane: new Plane({
       x: 150,
-      stripeColor: '#52d1ff',
-      wingColor: '#8ee3ff',
-      wingInnerColor: '#d4f6ff',
-      tailColor: '#2cb67d',
-      stabilizerColor: '#7ce3b7',
-      trailHue: 150,
+      stripeColor: '#5a8ba5',
+      wingColor: '#b6d8df',
+      wingInnerColor: '#e2f0ef',
+      tailColor: '#4b6c76',
+      stabilizerColor: '#88b4ad',
+      trailHue: 188,
     }),
   },
 ];
@@ -77,6 +80,12 @@ function setPlayerScore(player, nextScore) {
   void scoreCards[player.id].offsetWidth; // reflow
   scoreCards[player.id].classList.add('bump');
   setTimeout(() => scoreCards[player.id].classList.remove('bump'), 150);
+}
+
+function syncAudioButton() {
+  const muted = audio.isMuted();
+  btnAudio.textContent = muted ? 'SOUND: OFF' : 'SOUND: ON';
+  btnAudio.classList.toggle('is-muted', muted);
 }
 
 function resetPlayers() {
@@ -96,15 +105,20 @@ function flapPlayers(targetPlayers) {
     if (!player.alive) return;
     player.plane.flap();
     particles.spawnFlap(player.plane.x + 10, player.plane.y + player.plane.h / 2);
+    audio.playFlap(player.id);
   });
 }
 
 function startGame() {
+  audio.unlock();
   gameOverUi.style.display = 'none';
   pipes.reset();
   particles.clear();
   resetPlayers();
   state = 'playing';
+  audio.setMode('playing');
+  audio.restoreBgm();
+  audio.playStart();
   flapPlayers(players);
 }
 
@@ -139,11 +153,22 @@ btnRestart.addEventListener('click', e => {
   startGame();
 });
 
+btnAudio.addEventListener('click', async e => {
+  e.stopPropagation();
+  await audio.unlock();
+  audio.toggleMute();
+  syncAudioButton();
+});
+
 canvas.addEventListener('click', handleSharedInput);
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   handleSharedInput();
 }, { passive: false });
+
+document.addEventListener('pointerdown', () => {
+  audio.unlock();
+}, { once: true });
 
 // ---- COLLISION (ground / ceiling) ----
 function checkBounds(hb) {
@@ -172,6 +197,7 @@ function loop() {
         if (nextScore > player.bestScore) player.bestScore = nextScore;
         setPlayerScore(player, nextScore);
         particles.spawnScore(player.plane.x + player.plane.w, player.plane.y + player.plane.h / 2);
+        audio.playScore(player.id);
       }
 
       if (!player.alive) return;
@@ -179,12 +205,14 @@ function loop() {
       if (checkBounds(hb) || pipes.checkCollision(hb)) {
         player.alive = false;
         particles.spawnExplosion(player.plane.x + player.plane.w / 2, player.plane.y + player.plane.h / 2);
+        audio.playCrash(player.id);
       }
     });
 
     if (livingPlayers().length === 0) {
       state = 'dead';
       gameOverUi.style.display = 'flex';
+      audio.setMode('dead');
     }
   }
 
@@ -200,4 +228,5 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
+syncAudioButton();
 loop();
