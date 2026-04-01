@@ -28,7 +28,7 @@ export class AudioManager {
     audio.crossOrigin = 'anonymous';
     audio.volume = 1;
 
-    ['assets/audio/sky-journey.ogg', 'assets/audio/sky-journey.mp3', 'assets/audio/sky-journey.wav']
+    ['/assets/audio/sky-journey.ogg', '/assets/audio/sky-journey.mp3', '/assets/audio/sky-journey.wav']
       .forEach(src => {
         const sourceEl = document.createElement('source');
         sourceEl.src = src;

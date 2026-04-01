@@ -3,34 +3,126 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flappy Plane Duo</title>
+  <title>Sky Arcade Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
 </head>
 <body>
-  <div id="sceneGlow"></div>
-  <div id="gameWrapper">
-    <div id="topBar">
-      <div class="mode-pill">DUO FLIGHT</div>
-      <div class="mode-subtitle">Hand-painted sky chase</div>
-      <button id="btnAudio" class="sound-toggle" type="button">SOUND: ON</button>
-    </div>
-    <div id="scoreBoard">
-      <div id="scoreP1" class="score-card">P1 (W): <span id="scoreValP1">0</span></div>
-      <div id="scoreP2" class="score-card">P2 (UP): <span id="scoreValP2">0</span></div>
-    </div>
-    <div id="frameShell">
-      <div class="frame-badge left">P1 W</div>
-      <div class="frame-badge right">P2 UP</div>
-      <canvas id="canvas" width="400" height="550"></canvas>
-    </div>
-    <div id="ui">SPACE OR CLICK TO START • P1: W • P2: ARROW UP</div>
-    <div id="gameOverUi" style="display: none;">
-      <button id="btnRestart" class="game-btn restart-btn">PLAY AGAIN (Space)</button>
-    </div>
-  </div>
+  <div class="sky-wash"></div>
+  <main class="dashboard-shell">
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <p class="eyebrow">SKY ARCADE</p>
+        <h1>Dashboard game mini cho nhieu du an nho.</h1>
+        <p class="hero-text">
+          Flappy Plane gio la game dau tien trong bo suu tap. Dashboard nay duoc thiet ke de ban them
+          game moi, theo doi trang thai va mo tung game nhu mot destination rieng.
+        </p>
+        <div class="hero-actions">
+          <a class="primary-link" href="/games/flappy-plane/">Play Flappy Plane</a>
+          <a class="secondary-link" href="#gameGrid">Xem roadmap</a>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <span class="stat-label">Game active</span>
+          <strong class="stat-value">01</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Dang len y tuong</span>
+          <strong class="stat-value">02</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Theme</span>
+          <strong class="stat-value">Ghibli sky</strong>
+        </div>
+      </div>
+    </section>
 
-  <script type="module" src="js/main.js"></script>
+    <section class="featured-panel">
+      <div class="featured-copy">
+        <p class="panel-kicker">Featured game</p>
+        <h2>Flappy Plane Duo</h2>
+        <p>
+          Arcade flight game local 2 nguoi choi, da co audio system, visual hand-painted va che do
+          duo local. Day la game dau tien cua dashboard.
+        </p>
+        <ul class="feature-list">
+          <li>Duo local: P1 dung W, P2 dung Arrow Up</li>
+          <li>UI dashboard-moi, visual tranh tay am</li>
+          <li>Audio manager co slot nhac nen va fallback synth</li>
+        </ul>
+      </div>
+      <div class="featured-art">
+        <div class="mini-frame">
+          <div class="mini-sun"></div>
+          <div class="mini-hill hill-back"></div>
+          <div class="mini-hill hill-front"></div>
+          <div class="mini-plane plane-one"></div>
+          <div class="mini-plane plane-two"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gameGrid" class="grid-panel">
+      <div class="section-head">
+        <div>
+          <p class="panel-kicker">Game library</p>
+          <h2>Bo suu tap hien tai</h2>
+        </div>
+      </div>
+      <div class="game-grid">
+        <article class="game-card active">
+          <span class="status-badge live">LIVE</span>
+          <h3>Flappy Plane</h3>
+          <p>Game duo arcade dang choi duoc ngay tren web.</p>
+          <div class="card-meta">Gameplay: arcade flight</div>
+          <a class="card-link" href="/games/flappy-plane/">Mo game</a>
+        </article>
+
+        <article class="game-card idea">
+          <span class="status-badge draft">IDEA</span>
+          <h3>Cloud Courier</h3>
+          <p>Game giao thu tren may. Bay giao hang, tranh bao va thu thap stamp.</p>
+          <div class="card-meta">Gameplay: score attack / delivery run</div>
+          <button class="ghost-button" type="button" disabled>Sap toi</button>
+        </article>
+
+        <article class="game-card idea">
+          <span class="status-badge draft">IDEA</span>
+          <h3>Lantern Valley Rally</h3>
+          <p>Mini racing tren thung lung den long voi map nho, checkpoint va boost.</p>
+          <div class="card-meta">Gameplay: time trial / local competition</div>
+          <button class="ghost-button" type="button" disabled>Sap toi</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="roadmap-panel">
+      <div class="section-head">
+        <div>
+          <p class="panel-kicker">Studio notes</p>
+          <h2>Dashboard nay de lam gi</h2>
+        </div>
+      </div>
+      <div class="notes-grid">
+        <article class="note-card">
+          <h3>1. Tach tung game</h3>
+          <p>Moi game co route rieng, asset rieng va co the scale doc lap.</p>
+        </article>
+        <article class="note-card">
+          <h3>2. Them metadata</h3>
+          <p>Dashboard se hien genre, status, control scheme va ban build moi nhat.</p>
+        </article>
+        <article class="note-card">
+          <h3>3. Mo rong de dang</h3>
+          <p>Ban co the them game card moi ma khong can dong vao logic cua Flappy Plane.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/dashboard.js"></script>
 </body>
 </html>

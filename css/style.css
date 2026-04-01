@@ -23,6 +23,20 @@ body {
   color: #3d2a1d;
 }
 
+.back-link {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 3;
+  padding: 10px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #fff8ef;
+  background: linear-gradient(180deg, #7f614a 0%, #5f4330 100%);
+  box-shadow: 0 10px 18px #4e322544;
+  font-size: 8px;
+}
+
 body::before {
   content: '';
   position: absolute;
@@ -252,6 +266,11 @@ body::before {
 }
 
 @media (max-width: 460px) {
+  .back-link {
+    top: 10px;
+    left: 10px;
+  }
+
   #gameWrapper {
     width: min(94vw, 420px);
     padding-inline: 14px;

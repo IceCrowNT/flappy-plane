@@ -29,21 +29,30 @@ function send(res, statusCode, body, type = 'text/plain; charset=utf-8') {
 http.createServer((req, res) => {
   const requestPath = decodeURIComponent(req.url.split('?')[0]);
   const safePath = requestPath === '/' ? 'index.html' : requestPath.replace(/^\/+/, '');
-  const filePath = path.join(root, safePath);
+  let filePath = path.join(root, safePath);
 
   if (!filePath.startsWith(root)) {
     send(res, 403, 'Forbidden');
     return;
   }
 
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
+  fs.stat(filePath, (statErr, stat) => {
+    if (statErr) {
       send(res, 404, 'Not found');
       return;
     }
 
-    const ext = path.extname(filePath).toLowerCase();
-    send(res, 200, data, mimeTypes[ext] || 'application/octet-stream');
+    if (stat.isDirectory()) filePath = path.join(filePath, 'index.html');
+
+    fs.readFile(filePath, (readErr, data) => {
+      if (readErr) {
+        send(res, 404, 'Not found');
+        return;
+      }
+
+      const ext = path.extname(filePath).toLowerCase();
+      send(res, 200, data, mimeTypes[ext] || 'application/octet-stream');
+    });
   });
 }).listen(port, host, () => {
   console.log(`Flappy Plane is running at http://${host}:${port}`);
