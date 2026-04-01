@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wisp Forest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/games/wisp-forest/style.css" />
+</head>
+<body>
+  <div class="mist mist-left"></div>
+  <div class="mist mist-right"></div>
+
+  <main class="page-shell">
+    <section class="game-shell">
+      <div class="hud-row">
+        <a class="back-link" href="/">Back to Dashboard</a>
+        <div class="game-label">Wisp Forest</div>
+      </div>
+
+      <div class="title-block">
+        <div>
+          <p class="eyebrow">Luminous platform adventure</p>
+          <h1>Ori-lite vertical slice trong mini game library.</h1>
+        </div>
+        <p class="subtitle">
+          Chay, nhay, wall-slide, dash va ban spirit bolt de mo duong den den thieng cuoi rung.
+        </p>
+      </div>
+
+      <section class="stage-panel">
+        <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+        <div class="hud-overlay">
+          <div class="hud-card">
+            <span class="hud-label">Wisps</span>
+            <strong id="wispCount">0 / 5</strong>
+          </div>
+          <div class="hud-card">
+            <span class="hud-label">Health</span>
+            <strong id="healthValue">4</strong>
+          </div>
+          <div class="hud-card">
+            <span class="hud-label">Checkpoint</span>
+            <strong id="checkpointLabel">Awakening Pool</strong>
+          </div>
+        </div>
+
+        <div id="messageBox" class="message-box"></div>
+      </section>
+
+      <section class="info-grid">
+        <article class="info-card">
+          <h2>Controls</h2>
+          <ul>
+            <li>A / D hoặc Left / Right: move</li>
+            <li>Space / W / Up: jump và double jump</li>
+            <li>Shift / K: dash</li>
+            <li>J / Z: spirit bolt</li>
+            <li>R: reset run</li>
+          </ul>
+        </article>
+
+        <article class="info-card">
+          <h2>Goal</h2>
+          <p>
+            Thu thap 5 wisps, mo Forest Shrine va vuot qua doi patrol spirits de cham den den thieng.
+          </p>
+        </article>
+
+        <article class="info-card">
+          <h2>Design</h2>
+          <p>
+            Ban clone nay giu cam giac platformer cinematic va movement mượt, nhung scope du nho de song chung
+            voi cac mini game khac trong repo.
+          </p>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="/games/wisp-forest/main.js"></script>
+</body>
+</html>

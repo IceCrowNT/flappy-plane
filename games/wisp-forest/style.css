@@ -1,0 +1,290 @@
+:root {
+  color-scheme: dark;
+  --bg-top: #08141d;
+  --bg-mid: #102836;
+  --bg-bottom: #061019;
+  --panel: rgba(10, 18, 26, 0.76);
+  --panel-border: rgba(188, 235, 224, 0.18);
+  --text: #f4f8f3;
+  --muted: #bed2cf;
+  --accent: #8af2de;
+  --accent-strong: #e7ffd2;
+  --gold: #fff0a3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top, rgba(109, 226, 206, 0.12) 0%, transparent 24%),
+    radial-gradient(circle at 75% 18%, rgba(186, 255, 199, 0.12) 0%, transparent 18%),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 44%, var(--bg-bottom) 100%);
+  overflow-x: hidden;
+}
+
+.mist {
+  position: fixed;
+  inset: auto;
+  width: 540px;
+  height: 540px;
+  border-radius: 50%;
+  filter: blur(44px);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.mist-left {
+  top: -120px;
+  left: -120px;
+  background: radial-gradient(circle, rgba(121, 255, 221, 0.28) 0%, transparent 70%);
+}
+
+.mist-right {
+  top: 220px;
+  right: -180px;
+  background: radial-gradient(circle, rgba(255, 243, 170, 0.18) 0%, transparent 72%);
+}
+
+.page-shell {
+  width: min(1220px, calc(100vw - 28px));
+  margin: 0 auto;
+  padding: 22px 0 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.game-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.hud-row,
+.title-block,
+.stage-panel,
+.info-card {
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+}
+
+.hud-row,
+.title-block,
+.info-card {
+  border-radius: 24px;
+}
+
+.hud-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+}
+
+.back-link,
+.game-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+}
+
+.back-link {
+  color: var(--text);
+  text-decoration: none;
+  background: linear-gradient(180deg, rgba(87, 124, 117, 0.92) 0%, rgba(47, 73, 67, 0.92) 100%);
+}
+
+.game-label {
+  color: var(--accent-strong);
+  background: rgba(138, 242, 222, 0.11);
+  border: 1px solid rgba(138, 242, 222, 0.2);
+}
+
+.title-block {
+  padding: 26px 28px;
+  display: grid;
+  gap: 12px;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: var(--accent);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.title-block h1,
+.info-card h2 {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.title-block h1 {
+  font-size: clamp(34px, 4.4vw, 60px);
+  line-height: 0.96;
+}
+
+.subtitle,
+.info-card p,
+.info-card li {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+  font-size: 16px;
+}
+
+.stage-panel {
+  position: relative;
+  border-radius: 30px;
+  overflow: hidden;
+  padding: 14px;
+}
+
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #0e1c29 0%, #091018 100%);
+}
+
+.hud-overlay {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  right: 28px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+
+.hud-card,
+.message-box {
+  border: 1px solid rgba(198, 255, 235, 0.16);
+  background: rgba(5, 10, 16, 0.56);
+  backdrop-filter: blur(12px);
+}
+
+.hud-card {
+  min-width: 160px;
+  padding: 12px 14px;
+  border-radius: 18px;
+}
+
+.hud-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.hud-card strong {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.message-box {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  width: min(520px, calc(100% - 56px));
+  min-height: 56px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  text-align: center;
+  color: var(--accent-strong);
+  line-height: 1.55;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.info-card {
+  padding: 22px;
+}
+
+.info-card h2 {
+  margin-bottom: 14px;
+  font-size: 34px;
+}
+
+.info-card ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+@media (max-width: 980px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    width: min(100vw - 16px, 1220px);
+    padding: 14px 0 20px;
+  }
+
+  .hud-row,
+  .title-block,
+  .info-card {
+    border-radius: 18px;
+  }
+
+  .hud-row {
+    gap: 10px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .back-link,
+  .game-label {
+    justify-content: center;
+  }
+
+  .title-block {
+    padding: 20px;
+  }
+
+  .stage-panel {
+    padding: 10px;
+    border-radius: 22px;
+  }
+
+  .hud-overlay {
+    top: 18px;
+    left: 18px;
+    right: 18px;
+  }
+
+  .hud-card {
+    min-width: 132px;
+    padding: 10px 12px;
+  }
+
+  .message-box {
+    width: calc(100% - 28px);
+    bottom: 14px;
+    padding: 12px 14px;
+  }
+}
