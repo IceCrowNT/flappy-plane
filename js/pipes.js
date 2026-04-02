@@ -4,20 +4,6 @@
 
 import { CONFIG, COLORS } from './config.js';
 
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-
 export class PipeManager {
   constructor() {
     this.pipes = [];
@@ -35,17 +21,18 @@ export class PipeManager {
       this._spawn();
       this.timer = 0;
     }
-    this.pipes.forEach(p => {
-      p.x -= CONFIG.PIPE_SPEED;
+    this.pipes.forEach(pipe => {
+      pipe.x -= CONFIG.PIPE_SPEED;
     });
-    this.pipes = this.pipes.filter(p => p.x > -CONFIG.PIPE_WIDTH - 20);
+    this.pipes = this.pipes.filter(pipe => pipe.x > -CONFIG.PIPE_WIDTH - 24);
   }
 
   _spawn() {
     const minY = 80;
     const maxY = CONFIG.HEIGHT - CONFIG.GROUND_H - 80 - CONFIG.PIPE_GAP;
     const topH = Math.random() * (maxY - minY) + minY;
-    this.pipes.push({ x: CONFIG.WIDTH + 20, topH, scoredBy: {} });
+    const motif = Math.random() > 0.5 ? 'stone' : 'crystal';
+    this.pipes.push({ x: CONFIG.WIDTH + 20, topH, scoredBy: {}, motif });
   }
 
   checkScoring(players) {
@@ -65,9 +52,9 @@ export class PipeManager {
   }
 
   checkCollision(hb) {
-    for (const p of this.pipes) {
-      const inX = hb.x < p.x + CONFIG.PIPE_WIDTH && hb.x + hb.w > p.x;
-      if (inX && (hb.y < p.topH - 10 || hb.y + hb.h > p.topH + CONFIG.PIPE_GAP)) {
+    for (const pipe of this.pipes) {
+      const inX = hb.x < pipe.x + CONFIG.PIPE_WIDTH && hb.x + hb.w > pipe.x;
+      if (inX && (hb.y < pipe.topH - 10 || hb.y + hb.h > pipe.topH + CONFIG.PIPE_GAP)) {
         return true;
       }
     }
@@ -75,44 +62,76 @@ export class PipeManager {
   }
 
   draw(ctx) {
-    this.pipes.forEach(p => this._drawPipe(ctx, p.x, p.topH));
+    this.pipes.forEach(pipe => this._drawGate(ctx, pipe));
   }
 
-  _drawPipe(ctx, x, topH) {
+  _drawGate(ctx, pipe) {
+    const x = pipe.x;
+    const topH = pipe.topH;
     const W = CONFIG.PIPE_WIDTH;
-    const G = CONFIG.PIPE_GAP;
-    const H = CONFIG.HEIGHT;
-    const botY = topH + G;
-    const botH = H - botY;
+    const gap = CONFIG.PIPE_GAP;
+    const bottomY = topH + gap;
+    const bottomH = CONFIG.HEIGHT - bottomY;
 
-    const tGrad = ctx.createLinearGradient(x, 0, x + W, 0);
-    tGrad.addColorStop(0, COLORS.pipe0);
-    tGrad.addColorStop(0.5, COLORS.pipe1);
-    tGrad.addColorStop(1, COLORS.pipe2);
-    ctx.fillStyle = tGrad;
-    roundRect(ctx, x, 0, W, topH - 10, 6);
-    ctx.fill();
+    this._drawColumn(ctx, x, 0, topH - 14, pipe.motif, true);
+    this._drawColumn(ctx, x, bottomY + 14, bottomH, pipe.motif, false);
+    this._drawArchCap(ctx, x - 6, topH - 24, W + 12);
+    this._drawArchCap(ctx, x - 6, bottomY, W + 12);
+  }
 
-    ctx.fillStyle = COLORS.pipeCap;
-    roundRect(ctx, x - 6, topH - 26, W + 12, 26, 8);
-    ctx.fill();
-    ctx.strokeStyle = COLORS.pipe2;
-    ctx.lineWidth = 2;
-    roundRect(ctx, x - 6, topH - 26, W + 12, 26, 8);
-    ctx.stroke();
+  _drawColumn(ctx, x, y, h, motif, flipped) {
+    const w = CONFIG.PIPE_WIDTH;
+    ctx.fillStyle = COLORS.stoneMid;
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = COLORS.stoneLight;
+    ctx.fillRect(x + 4, y + 4, 12, h - 8);
+    ctx.fillStyle = COLORS.stoneDark;
+    ctx.fillRect(x + w - 12, y + 4, 8, h - 8);
 
-    const bGrad = ctx.createLinearGradient(x, 0, x + W, 0);
-    bGrad.addColorStop(0, COLORS.pipe0);
-    bGrad.addColorStop(0.5, COLORS.pipe1);
-    bGrad.addColorStop(1, COLORS.pipe2);
-    ctx.fillStyle = bGrad;
-    roundRect(ctx, x, botY + 10, W, botH, 6);
+    for (let iy = y + 10; iy < y + h - 14; iy += 18) {
+      ctx.fillStyle = motif === 'crystal' ? COLORS.crystal : COLORS.houseWindow;
+      ctx.fillRect(x + w / 2 - 4, iy, 8, 8);
+      ctx.fillStyle = COLORS.ink;
+      ctx.strokeRect(x + w / 2 - 4, iy, 8, 8);
+    }
+
+    if (motif === 'crystal') {
+      this._drawVineCrystal(ctx, x + 9, flipped ? y + h - 18 : y + 10);
+      this._drawVineCrystal(ctx, x + w - 16, flipped ? y + h - 30 : y + 22);
+    } else {
+      this._drawLantern(ctx, x + 10, flipped ? y + h - 18 : y + 12);
+      this._drawLantern(ctx, x + w - 10, flipped ? y + h - 32 : y + 26);
+    }
+  }
+
+  _drawArchCap(ctx, x, y, w) {
+    ctx.fillStyle = COLORS.hudFrame;
+    ctx.fillRect(x, y, w, 10);
+    ctx.fillStyle = COLORS.stoneLight;
+    ctx.fillRect(x + 4, y + 2, w - 8, 4);
+    ctx.fillStyle = COLORS.ink;
+    ctx.strokeRect(x, y, w, 10);
+  }
+
+  _drawLantern(ctx, x, y) {
+    ctx.fillStyle = COLORS.lanternGlow;
+    ctx.fillRect(x - 4, y - 4, 12, 12);
+    ctx.fillStyle = COLORS.houseWindow;
+    ctx.fillRect(x - 1, y - 1, 6, 6);
+    ctx.fillStyle = COLORS.hudFrameDeep;
+    ctx.fillRect(x + 1, y - 5, 2, 4);
+  }
+
+  _drawVineCrystal(ctx, x, y) {
+    ctx.fillStyle = COLORS.hillFront;
+    ctx.fillRect(x, y, 2, 10);
+    ctx.fillStyle = COLORS.crystal;
+    ctx.beginPath();
+    ctx.moveTo(x + 1, y - 6);
+    ctx.lineTo(x + 6, y - 1);
+    ctx.lineTo(x + 3, y + 4);
+    ctx.lineTo(x - 1, y + 2);
+    ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = COLORS.pipeCap;
-    roundRect(ctx, x - 6, botY, W + 12, 26, 8);
-    ctx.fill();
-    ctx.strokeStyle = COLORS.pipe2;
-    roundRect(ctx, x - 6, botY, W + 12, 26, 8);
-    ctx.stroke();
   }
 }

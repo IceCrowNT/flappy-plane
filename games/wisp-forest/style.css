@@ -9,7 +9,6 @@
   --muted: #bed2cf;
   --accent: #8af2de;
   --accent-strong: #e7ffd2;
-  --gold: #fff0a3;
 }
 
 * {
@@ -129,7 +128,8 @@ body {
 }
 
 .title-block h1,
-.info-card h2 {
+.info-card h2,
+.overlay-panel h2 {
   margin: 0;
   font-family: 'Cormorant Garamond', serif;
 }
@@ -141,7 +141,8 @@ body {
 
 .subtitle,
 .info-card p,
-.info-card li {
+.info-card li,
+.overlay-text {
   margin: 0;
   color: var(--muted);
   line-height: 1.65;
@@ -175,7 +176,8 @@ body {
 }
 
 .hud-card,
-.message-box {
+.message-box,
+.overlay-panel {
   border: 1px solid rgba(198, 255, 235, 0.16);
   background: rgba(5, 10, 16, 0.56);
   backdrop-filter: blur(12px);
@@ -211,6 +213,70 @@ body {
   text-align: center;
   color: var(--accent-strong);
   line-height: 1.55;
+}
+
+.center-overlay {
+  position: absolute;
+  inset: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(1, 7, 12, 0.18) 0%, rgba(1, 7, 12, 0.64) 100%);
+}
+
+.center-overlay.hidden {
+  display: none;
+}
+
+.overlay-panel {
+  width: min(520px, calc(100% - 24px));
+  padding: 26px 28px;
+  border-radius: 26px;
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.36);
+}
+
+.overlay-eyebrow {
+  margin: 0 0 10px;
+  color: var(--accent);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.overlay-panel h2 {
+  font-size: clamp(38px, 5vw, 56px);
+  line-height: 0.95;
+}
+
+.overlay-text {
+  margin-top: 16px;
+}
+
+.overlay-actions {
+  margin-top: 22px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.overlay-button {
+  min-width: 148px;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  color: #03291f;
+  background: linear-gradient(180deg, #dfffd8 0%, #89f2de 100%);
+  cursor: pointer;
+}
+
+.overlay-button.secondary {
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(70, 104, 95, 0.92) 0%, rgba(33, 49, 45, 0.92) 100%);
 }
 
 .info-grid {
@@ -286,5 +352,15 @@ body {
     width: calc(100% - 28px);
     bottom: 14px;
     padding: 12px 14px;
+  }
+
+  .center-overlay {
+    inset: 10px;
+    padding: 16px;
+  }
+
+  .overlay-panel {
+    padding: 20px;
+    border-radius: 20px;
   }
 }

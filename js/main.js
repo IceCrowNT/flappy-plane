@@ -2,7 +2,7 @@
 //  FLAPPY PLANE - Main Game
 // ============================
 
-import { CONFIG } from './config.js';
+import { CONFIG, COLORS, PLAYER_THEMES } from './config.js';
 import { Plane } from './plane.js';
 import { PipeManager } from './pipes.js';
 import { Background } from './background.js';
@@ -45,12 +45,12 @@ const players = [
     alive: true,
     plane: new Plane({
       x: 90,
-      stripeColor: '#cc8657',
-      wingColor: '#f3d2a5',
-      wingInnerColor: '#f9e8c9',
-      tailColor: '#9f6647',
-      stabilizerColor: '#c9956f',
-      trailHue: 28,
+      stripeColor: PLAYER_THEMES.p1.stripe,
+      wingColor: PLAYER_THEMES.p1.stripeSoft,
+      wingInnerColor: COLORS.planeBody,
+      tailColor: PLAYER_THEMES.p1.tail,
+      stabilizerColor: COLORS.houseRoof,
+      trailColor: PLAYER_THEMES.p1.trail,
     }),
   },
   {
@@ -62,12 +62,12 @@ const players = [
     alive: true,
     plane: new Plane({
       x: 150,
-      stripeColor: '#5a8ba5',
-      wingColor: '#b6d8df',
-      wingInnerColor: '#e2f0ef',
-      tailColor: '#4b6c76',
-      stabilizerColor: '#88b4ad',
-      trailHue: 188,
+      stripeColor: PLAYER_THEMES.p2.stripe,
+      wingColor: PLAYER_THEMES.p2.stripeSoft,
+      wingInnerColor: COLORS.planeBody,
+      tailColor: PLAYER_THEMES.p2.tail,
+      stabilizerColor: COLORS.crystal,
+      trailColor: PLAYER_THEMES.p2.trail,
     }),
   },
 ];

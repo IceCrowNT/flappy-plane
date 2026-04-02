@@ -1,58 +1,145 @@
 // ============================
-//  FLAPPY PLANE — Config
+//  FLAPPY PLANE - Config
 // ============================
 
 export const CONFIG = {
-  // Canvas
   WIDTH: 400,
   HEIGHT: 550,
-
-  // Physics
   GRAVITY: 0.45,
   FLAP_POWER: -7.5,
   MAX_FALL_SPEED: 10,
-
-  // Pipes
   PIPE_WIDTH: 58,
   PIPE_GAP: 160,
   PIPE_SPEED: 2.6,
-  PIPE_INTERVAL: 90,         // frames between spawns
-
-  // Plane
+  PIPE_INTERVAL: 90,
   PLANE_X: 90,
   PLANE_W: 52,
   PLANE_H: 34,
   TRAIL_LENGTH: 12,
-
-  // Background
-  STAR_COUNT: 60,
+  STAR_COUNT: 18,
   CLOUD_COUNT: 5,
   GROUND_H: 60,
-
-  // Particles
   FLAP_PARTICLES: 5,
   EXPLOSION_PARTICLES: 30,
 };
 
+const FALLBACKS = {
+  '--flappy-sky-band-top': '#8fc8e8',
+  '--flappy-sky-band-mid': '#b9dff0',
+  '--flappy-sky-band-low': '#cfe6dd',
+  '--flappy-sky-band-bottom': '#e3f3f7',
+  '--flappy-cloud-main': '#f8f4de',
+  '--flappy-cloud-shadow': '#c5dbea',
+  '--flappy-sun': '#fff2c3',
+  '--flappy-island-grass': '#c5dc7d',
+  '--flappy-island-grass-deep': '#7ca35d',
+  '--flappy-island-dirt': '#8e7358',
+  '--flappy-island-dirt-deep': '#6f5846',
+  '--flappy-hill-back': '#b9d78d',
+  '--flappy-hill-mid': '#95bc6d',
+  '--flappy-hill-front': '#6e9557',
+  '--flappy-ground-top': '#9cc56a',
+  '--flappy-ground-bottom': '#355a47',
+  '--flappy-ground-line': 'rgba(248, 244, 222, 0.62)',
+  '--flappy-house-wall': '#f4e8d2',
+  '--flappy-house-roof': '#c97b5a',
+  '--flappy-house-window': '#f3c977',
+  '--flappy-stone-light': '#c7bca9',
+  '--flappy-stone-mid': '#b8ae9b',
+  '--flappy-stone-dark': '#8f8579',
+  '--flappy-crystal': '#8dd9d0',
+  '--flappy-crystal-deep': '#65b6aa',
+  '--flappy-lantern-glow': 'rgba(243, 201, 119, 0.3)',
+  '--flappy-plane-body': '#f5eddc',
+  '--flappy-plane-body-shadow': '#deceb5',
+  '--flappy-plane-window': '#d9f0f8',
+  '--flappy-plane-window-shine': '#f9fdff',
+  '--flappy-plane-p1-accent': '#c97b5a',
+  '--flappy-plane-p1-accent-soft': '#efc39e',
+  '--flappy-plane-p1-tail': '#a56b4d',
+  '--flappy-plane-p1-trail': 'rgba(243, 201, 119, 0.72)',
+  '--flappy-plane-p2-accent': '#7ba8b8',
+  '--flappy-plane-p2-accent-soft': '#bfdde3',
+  '--flappy-plane-p2-tail': '#5d7d86',
+  '--flappy-plane-p2-trail': 'rgba(141, 217, 208, 0.74)',
+  '--flappy-hud-surface': 'rgba(252, 248, 234, 0.94)',
+  '--flappy-hud-surface-strong': 'rgba(242, 233, 210, 0.97)',
+  '--flappy-hud-frame': '#8c6548',
+  '--flappy-hud-frame-deep': '#6f4f39',
+  '--flappy-hud-ink': '#5c5147',
+  '--flappy-button-primary-top': '#f3c977',
+  '--flappy-button-primary-bottom': '#dca65d',
+  '--flappy-button-secondary-top': '#b6d7cc',
+  '--flappy-button-secondary-bottom': '#8fb8ad',
+  '--flappy-overlay-scrim': 'rgba(92, 81, 71, 0.2)',
+  '--flappy-overlay-card': 'rgba(252, 248, 234, 0.92)',
+  '--flappy-overlay-card-edge': 'rgba(92, 81, 71, 0.34)',
+  '--flappy-canvas-glow': 'rgba(243, 201, 119, 0.16)',
+};
+
+function readToken(name) {
+  if (typeof document === 'undefined') return FALLBACKS[name];
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || FALLBACKS[name];
+}
+
 export const COLORS = {
-  sky0: '#f8d8a5',
-  sky1: '#f2b37c',
-  sky2: '#87a7bf',
-  sky3: '#4d6987',
-  sun: '#fff1bf',
-  haze: '#fff7e5',
-  hill0: '#93ab74',
-  hill1: '#759060',
-  hill2: '#587151',
-  ground0: '#617b51',
-  ground1: '#41563a',
-  groundLine: '#f8e6b066',
-  pipe0: '#6c8f58',
-  pipe1: '#88ab71',
-  pipe2: '#4d6742',
-  pipeCap: '#a5bc86',
-  accent: '#c78357',
-  gold: '#ffe7a2',
-  teal: '#6da0a5',
-  cloud: '#fffaf0',
+  sky0: readToken('--flappy-sky-band-top'),
+  sky1: readToken('--flappy-sky-band-mid'),
+  sky2: readToken('--flappy-sky-band-low'),
+  sky3: readToken('--flappy-sky-band-bottom'),
+  cloud: readToken('--flappy-cloud-main'),
+  cloudShadow: readToken('--flappy-cloud-shadow'),
+  sun: readToken('--flappy-sun'),
+  islandGrass: readToken('--flappy-island-grass'),
+  islandGrassDeep: readToken('--flappy-island-grass-deep'),
+  islandDirt: readToken('--flappy-island-dirt'),
+  islandDirtDeep: readToken('--flappy-island-dirt-deep'),
+  hillBack: readToken('--flappy-hill-back'),
+  hillMid: readToken('--flappy-hill-mid'),
+  hillFront: readToken('--flappy-hill-front'),
+  groundTop: readToken('--flappy-ground-top'),
+  groundBottom: readToken('--flappy-ground-bottom'),
+  groundLine: readToken('--flappy-ground-line'),
+  houseWall: readToken('--flappy-house-wall'),
+  houseRoof: readToken('--flappy-house-roof'),
+  houseWindow: readToken('--flappy-house-window'),
+  stoneLight: readToken('--flappy-stone-light'),
+  stoneMid: readToken('--flappy-stone-mid'),
+  stoneDark: readToken('--flappy-stone-dark'),
+  crystal: readToken('--flappy-crystal'),
+  crystalDeep: readToken('--flappy-crystal-deep'),
+  lanternGlow: readToken('--flappy-lantern-glow'),
+  planeBody: readToken('--flappy-plane-body'),
+  planeBodyShadow: readToken('--flappy-plane-body-shadow'),
+  planeWindow: readToken('--flappy-plane-window'),
+  planeWindowShine: readToken('--flappy-plane-window-shine'),
+  hudSurface: readToken('--flappy-hud-surface'),
+  hudSurfaceStrong: readToken('--flappy-hud-surface-strong'),
+  hudFrame: readToken('--flappy-hud-frame'),
+  hudFrameDeep: readToken('--flappy-hud-frame-deep'),
+  ink: readToken('--flappy-hud-ink'),
+  buttonPrimaryTop: readToken('--flappy-button-primary-top'),
+  buttonPrimaryBottom: readToken('--flappy-button-primary-bottom'),
+  buttonSecondaryTop: readToken('--flappy-button-secondary-top'),
+  buttonSecondaryBottom: readToken('--flappy-button-secondary-bottom'),
+  overlayScrim: readToken('--flappy-overlay-scrim'),
+  overlayCard: readToken('--flappy-overlay-card'),
+  overlayCardEdge: readToken('--flappy-overlay-card-edge'),
+  canvasGlow: readToken('--flappy-canvas-glow'),
+};
+
+export const PLAYER_THEMES = {
+  p1: {
+    stripe: readToken('--flappy-plane-p1-accent'),
+    stripeSoft: readToken('--flappy-plane-p1-accent-soft'),
+    tail: readToken('--flappy-plane-p1-tail'),
+    trail: readToken('--flappy-plane-p1-trail'),
+  },
+  p2: {
+    stripe: readToken('--flappy-plane-p2-accent'),
+    stripeSoft: readToken('--flappy-plane-p2-accent-soft'),
+    tail: readToken('--flappy-plane-p2-tail'),
+    trail: readToken('--flappy-plane-p2-trail'),
+  },
 };

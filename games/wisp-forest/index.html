@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/theme.css" />
   <link rel="stylesheet" href="/games/wisp-forest/style.css" />
 </head>
 <body>
@@ -23,10 +24,10 @@
       <div class="title-block">
         <div>
           <p class="eyebrow">Luminous platform adventure</p>
-          <h1>Ori-lite vertical slice trong mini game library.</h1>
+          <h1>Ori-lite action platformer for the mini game library.</h1>
         </div>
         <p class="subtitle">
-          Chay, nhay, wall-slide, dash va ban spirit bolt de mo duong den den thieng cuoi rung.
+          Run, wall-slide, dash, fire spirit bolts, and survive a shrine boss at the end of the forest.
         </p>
       </div>
 
@@ -36,15 +37,37 @@
         <div class="hud-overlay">
           <div class="hud-card">
             <span class="hud-label">Wisps</span>
-            <strong id="wispCount">0 / 5</strong>
+            <strong id="wispCount">0 / 6</strong>
           </div>
           <div class="hud-card">
             <span class="hud-label">Health</span>
             <strong id="healthValue">4</strong>
           </div>
           <div class="hud-card">
+            <span class="hud-label">Energy</span>
+            <strong id="energyValue">100</strong>
+          </div>
+          <div class="hud-card">
             <span class="hud-label">Checkpoint</span>
             <strong id="checkpointLabel">Awakening Pool</strong>
+          </div>
+          <div class="hud-card">
+            <span class="hud-label">State</span>
+            <strong id="phaseLabel">Dormant</strong>
+          </div>
+        </div>
+
+        <div id="centerOverlay" class="center-overlay">
+          <div class="overlay-panel">
+            <p id="overlayEyebrow" class="overlay-eyebrow">Wisp Forest</p>
+            <h2 id="overlayTitle">Awaken the forest</h2>
+            <p id="overlayText" class="overlay-text">
+              Collect wisps, manage energy, survive spirit patrols, then break the shrine sentinel in a final arena.
+            </p>
+            <div class="overlay-actions">
+              <button id="startButton" class="overlay-button" type="button">Start Run</button>
+              <button id="resumeButton" class="overlay-button secondary" type="button">Resume</button>
+            </div>
           </div>
         </div>
 
@@ -55,26 +78,27 @@
         <article class="info-card">
           <h2>Controls</h2>
           <ul>
-            <li>A / D hoặc Left / Right: move</li>
-            <li>Space / W / Up: jump và double jump</li>
+            <li>A / D or Left / Right: move</li>
+            <li>Space / W / Up: jump and double jump</li>
             <li>Shift / K: dash</li>
             <li>J / Z: spirit bolt</li>
-            <li>R: reset run</li>
+            <li>P / Esc: pause</li>
+            <li>R: restart run</li>
           </ul>
         </article>
 
         <article class="info-card">
           <h2>Goal</h2>
           <p>
-            Thu thap 5 wisps, mo Forest Shrine va vuot qua doi patrol spirits de cham den den thieng.
+            Collect 6 wisps, open the Shrine Gate, then defeat the Shrine Sentinel before climbing to the sanctum.
           </p>
         </article>
 
         <article class="info-card">
           <h2>Design</h2>
           <p>
-            Ban clone nay giu cam giac platformer cinematic va movement mượt, nhung scope du nho de song chung
-            voi cac mini game khac trong repo.
+            This upgrade is denser than the first slice: energy economy, ranged enemies, pause state, and a proper boss
+            finale instead of a simple finish trigger.
           </p>
         </article>
       </section>
