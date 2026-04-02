@@ -1,0 +1,173 @@
+:root {
+  color-scheme: light;
+  --theme-sky-top: #8fc8e8;
+  --theme-sky-mid: #b9dff0;
+  --theme-sky-bottom: #e3f3f7;
+  --theme-cloud: #f8f4de;
+  --theme-cloud-shadow: #c5dbea;
+  --theme-meadow-light: #c5dc7d;
+  --theme-meadow: #9cc56a;
+  --theme-meadow-deep: #7ca35d;
+  --theme-forest: #355a47;
+  --theme-forest-deep: #243f34;
+  --theme-wood: #8c6548;
+  --theme-wood-deep: #6f4f39;
+  --theme-roof: #c97b5a;
+  --theme-lantern: #f3c977;
+  --theme-lavender: #a98ad1;
+  --theme-crystal: #8dd9d0;
+  --theme-stone: #b8ae9b;
+  --theme-ink: #5c5147;
+  --theme-text: #4d433b;
+  --theme-text-soft: #6e645b;
+  --theme-text-muted: #877d75;
+  --theme-surface: rgba(252, 248, 234, 0.92);
+  --theme-surface-strong: rgba(245, 238, 218, 0.96);
+  --theme-surface-soft: rgba(255, 255, 255, 0.55);
+  --theme-border: rgba(92, 81, 71, 0.24);
+  --theme-border-strong: rgba(92, 81, 71, 0.4);
+  --theme-shadow: 0 24px 50px rgba(78, 95, 83, 0.16);
+  --theme-shadow-soft: 0 12px 24px rgba(78, 95, 83, 0.12);
+  --theme-radius-sm: 10px;
+  --theme-radius-md: 18px;
+  --theme-radius-lg: 30px;
+  --theme-container: 1216px;
+  --theme-font-display: "Newsreader", "Cormorant Garamond", serif;
+  --theme-font-body: "Inter", "Outfit", sans-serif;
+  --theme-font-pixel: "Press Start 2P", monospace;
+  --theme-panel-gradient: linear-gradient(180deg, rgba(252, 248, 234, 0.98) 0%, rgba(242, 233, 210, 0.98) 100%);
+  --theme-button-primary-start: #f3c977;
+  --theme-button-primary-end: #dca65d;
+  --theme-button-secondary-start: #b6d7cc;
+  --theme-button-secondary-end: #8fb8ad;
+  --theme-accent: #c97b5a;
+  --theme-accent-strong: #a96b50;
+  --theme-accent-soft: rgba(201, 123, 90, 0.14);
+  --theme-accent-glow: rgba(243, 201, 119, 0.24);
+  --theme-success: #88a96f;
+  --flappy-sky-band-top: var(--theme-sky-top);
+  --flappy-sky-band-mid: var(--theme-sky-mid);
+  --flappy-sky-band-low: #cfe6dd;
+  --flappy-sky-band-bottom: var(--theme-sky-bottom);
+  --flappy-cloud-main: var(--theme-cloud);
+  --flappy-cloud-shadow: var(--theme-cloud-shadow);
+  --flappy-sun: #fff2c3;
+  --flappy-island-grass: var(--theme-meadow-light);
+  --flappy-island-grass-deep: var(--theme-meadow-deep);
+  --flappy-island-dirt: #8e7358;
+  --flappy-island-dirt-deep: #6f5846;
+  --flappy-hill-back: #b9d78d;
+  --flappy-hill-mid: #95bc6d;
+  --flappy-hill-front: #6e9557;
+  --flappy-ground-top: var(--theme-meadow);
+  --flappy-ground-bottom: var(--theme-forest);
+  --flappy-ground-line: rgba(248, 244, 222, 0.62);
+  --flappy-house-wall: #f4e8d2;
+  --flappy-house-roof: var(--theme-roof);
+  --flappy-house-window: var(--theme-lantern);
+  --flappy-stone-light: #c7bca9;
+  --flappy-stone-mid: var(--theme-stone);
+  --flappy-stone-dark: #8f8579;
+  --flappy-crystal: var(--theme-crystal);
+  --flappy-crystal-deep: #65b6aa;
+  --flappy-lantern-glow: rgba(243, 201, 119, 0.3);
+  --flappy-plane-body: #f5eddc;
+  --flappy-plane-body-shadow: #deceb5;
+  --flappy-plane-window: #d9f0f8;
+  --flappy-plane-window-shine: #f9fdff;
+  --flappy-plane-p1-accent: var(--theme-roof);
+  --flappy-plane-p1-accent-soft: #efc39e;
+  --flappy-plane-p1-tail: #a56b4d;
+  --flappy-plane-p1-trail: rgba(243, 201, 119, 0.72);
+  --flappy-plane-p2-accent: #7ba8b8;
+  --flappy-plane-p2-accent-soft: #bfdde3;
+  --flappy-plane-p2-tail: #5d7d86;
+  --flappy-plane-p2-trail: rgba(141, 217, 208, 0.74);
+  --flappy-hud-surface: rgba(252, 248, 234, 0.94);
+  --flappy-hud-surface-strong: rgba(242, 233, 210, 0.97);
+  --flappy-hud-frame: var(--theme-wood);
+  --flappy-hud-frame-deep: var(--theme-wood-deep);
+  --flappy-hud-ink: var(--theme-ink);
+  --flappy-button-primary-top: var(--theme-button-primary-start);
+  --flappy-button-primary-bottom: var(--theme-button-primary-end);
+  --flappy-button-secondary-top: var(--theme-button-secondary-start);
+  --flappy-button-secondary-bottom: var(--theme-button-secondary-end);
+  --flappy-overlay-scrim: rgba(92, 81, 71, 0.2);
+  --flappy-overlay-card: rgba(252, 248, 234, 0.92);
+  --flappy-overlay-card-edge: rgba(92, 81, 71, 0.34);
+  --flappy-canvas-glow: rgba(243, 201, 119, 0.16);
+  --flappy-ambient-meadow-glow: rgba(197, 220, 125, 0.2);
+  --flappy-ambient-lantern-glow: rgba(243, 201, 119, 0.18);
+  --flappy-pill-surface: rgba(240, 232, 205, 0.98);
+  --flappy-card-highlight: rgba(255, 255, 255, 0.8);
+  --flappy-card-shadow: rgba(78, 95, 83, 0.18);
+  --flappy-score-p1-border: rgba(201, 123, 90, 0.28);
+  --flappy-score-p1-start: rgba(252, 243, 233, 0.98);
+  --flappy-score-p1-end: rgba(244, 225, 207, 0.98);
+  --flappy-score-p2-border: rgba(141, 217, 208, 0.3);
+  --flappy-score-p2-start: rgba(239, 249, 247, 0.98);
+  --flappy-score-p2-end: rgba(219, 239, 236, 0.98);
+  --flappy-frame-highlight: rgba(255, 255, 255, 0.18);
+  --flappy-badge-border: rgba(92, 81, 71, 0.24);
+  --flappy-badge-surface: rgba(235, 224, 193, 1);
+  --flappy-canvas-border: rgba(248, 244, 222, 0.9);
+  --flappy-canvas-inner: rgba(92, 81, 71, 0.15);
+  --flappy-canvas-outer: rgba(92, 81, 71, 0.12);
+  --flappy-button-border: rgba(201, 123, 90, 0.34);
+}
+
+html,
+body {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(248, 244, 222, 0.85) 0%, transparent 24%),
+    linear-gradient(180deg, var(--theme-sky-top) 0%, var(--theme-sky-mid) 42%, var(--theme-sky-bottom) 100%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(255, 255, 255, 0.3) 0%, transparent 12%),
+    radial-gradient(circle at 82% 10%, rgba(255, 255, 255, 0.28) 0%, transparent 10%);
+  opacity: 0.7;
+}
+
+::selection {
+  color: #fffaf0;
+  background: var(--theme-accent);
+}
+
+.theme-panel {
+  border: 1px solid var(--theme-border);
+  background: var(--theme-panel-gradient);
+  box-shadow: var(--theme-shadow);
+  backdrop-filter: blur(8px);
+}
+
+.theme-panel-forest {
+  border: 1px solid rgba(53, 90, 71, 0.22);
+  background: linear-gradient(180deg, rgba(229, 240, 228, 0.95) 0%, rgba(206, 222, 202, 0.95) 100%);
+  box-shadow: var(--theme-shadow-soft);
+}
+
+.theme-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--theme-border);
+  border-radius: 999px;
+  color: var(--theme-text-soft);
+  background: rgba(248, 244, 222, 0.82);
+}
+
+.theme-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--theme-lantern);
+  box-shadow: 0 0 10px var(--theme-accent-glow);
+}

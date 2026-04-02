@@ -2,7 +2,7 @@
 //  FLAPPY PLANE - Overlay UI
 // ============================
 
-import { CONFIG } from './config.js';
+import { CONFIG, COLORS } from './config.js';
 
 export class Overlay {
   drawIdle(ctx, frame, players) {
@@ -10,44 +10,37 @@ export class Overlay {
     const H = CONFIG.HEIGHT;
     const bestLine = players.map(player => `${player.label}:${player.bestScore}`).join('   ');
 
-    ctx.fillStyle = 'rgba(61, 40, 26, 0.18)';
+    ctx.fillStyle = COLORS.overlayScrim;
     ctx.fillRect(0, 0, W, H);
 
-    ctx.fillStyle = 'rgba(255, 245, 231, 0.78)';
-    ctx.strokeStyle = 'rgba(143, 105, 76, 0.8)';
-    ctx.lineWidth = 3;
-    this._roundRect(ctx, 34, 108, W - 68, 220, 24);
-    ctx.fill();
-    ctx.stroke();
+    this._panel(ctx, 34, 102, W - 68, 236);
 
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#7c5238';
-    ctx.font = '18px "Press Start 2P"';
-    ctx.shadowColor = '#fff1d6';
-    ctx.shadowBlur = 10;
-    ctx.fillText('FLAPPY PLANE', W / 2, H / 2 - 92);
-    ctx.shadowBlur = 0;
+    ctx.fillStyle = COLORS.hudFrameDeep;
+    ctx.font = '700 26px "Newsreader", serif';
+    ctx.fillText('Flappy Plane', W / 2, H / 2 - 92);
 
-    ctx.fillStyle = '#a46f4b';
-    ctx.font = '8px "Press Start 2P"';
-    ctx.fillText('SKY DUO EDITION', W / 2, H / 2 - 58);
+    ctx.fillStyle = COLORS.ink;
+    ctx.font = '600 11px "Inter", sans-serif';
+    ctx.fillText('Sky Cottage Pixel duo flight', W / 2, H / 2 - 58);
 
     if (Math.floor(frame / 20) % 2) {
-      ctx.fillStyle = '#5d875e';
-      ctx.font = '8px "Press Start 2P"';
-      ctx.fillText('[ SPACE / CLICK TO START ]', W / 2, H / 2 + 6);
+      ctx.fillStyle = COLORS.houseRoof;
+      ctx.font = '10px "Press Start 2P"';
+      ctx.fillText('[ SPACE / CLICK TO START ]', W / 2, H / 2 + 4);
     }
 
-    ctx.fillStyle = '#5f6f80';
-    ctx.font = '8px "Press Start 2P"';
-    ctx.fillText('P1: W    P2: ARROW UP', W / 2, H / 2 + 40);
+    ctx.fillStyle = COLORS.hudFrame;
+    ctx.font = '600 10px "Inter", sans-serif';
+    ctx.fillText('P1 uses W  •  P2 uses Arrow Up', W / 2, H / 2 + 42);
 
     if (players.some(player => player.bestScore > 0)) {
-      ctx.fillText(`BEST: ${bestLine}`, W / 2, H / 2 + 76);
+      ctx.fillStyle = COLORS.ink;
+      ctx.font = '9px "Press Start 2P"';
+      ctx.fillText(`BEST  ${bestLine}`, W / 2, H / 2 + 84);
     }
 
     ctx.textAlign = 'left';
-    ctx.shadowBlur = 0;
   }
 
   drawDead(ctx, players) {
@@ -56,40 +49,44 @@ export class Overlay {
     const standings = [...players].sort((a, b) => b.score - a.score);
     const leadScore = standings[0].score;
     const winners = standings.filter(player => player.score === leadScore);
-    const winnerText = winners.length > 1 ? 'DRAW' : `${winners[0].label} WINS`;
+    const winnerText = winners.length > 1 ? 'Draw in the valley skies' : `${winners[0].label} wins the run`;
 
-    ctx.fillStyle = 'rgba(47, 35, 27, 0.24)';
+    ctx.fillStyle = COLORS.overlayScrim;
     ctx.fillRect(0, 0, W, H);
 
-    ctx.fillStyle = 'rgba(253, 243, 228, 0.82)';
-    ctx.strokeStyle = 'rgba(143, 105, 76, 0.86)';
+    this._panel(ctx, 36, 122, W - 72, 204);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = COLORS.houseRoof;
+    ctx.font = '700 24px "Newsreader", serif';
+    ctx.fillText('Flight Over', W / 2, H / 2 - 54);
+
+    ctx.fillStyle = COLORS.ink;
+    ctx.font = '9px "Press Start 2P"';
+    ctx.fillText(`P1 ${players[0].score}   P2 ${players[1].score}`, W / 2, H / 2 - 10);
+
+    ctx.fillStyle = COLORS.hudFrame;
+    ctx.font = '600 10px "Inter", sans-serif';
+    ctx.fillText(winnerText, W / 2, H / 2 + 20);
+
+    ctx.fillStyle = COLORS.crystalDeep;
+    ctx.font = '8px "Press Start 2P"';
+    ctx.fillText('SPACE / CLICK TO RESTART', W / 2, H / 2 + 48);
+
+    ctx.textAlign = 'left';
+  }
+
+  _panel(ctx, x, y, w, h) {
+    ctx.fillStyle = COLORS.overlayCard;
+    ctx.strokeStyle = COLORS.overlayCardEdge;
     ctx.lineWidth = 3;
-    this._roundRect(ctx, 38, 126, W - 76, 188, 24);
+    this._roundRect(ctx, x, y, w, h, 18);
     ctx.fill();
     ctx.stroke();
 
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#a25543';
-    ctx.font = '15px "Press Start 2P"';
-    ctx.shadowColor = '#fff4e7';
-    ctx.shadowBlur = 10;
-    ctx.fillText('GAME OVER!', W / 2, H / 2 - 60);
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = '#7c5238';
-    ctx.font = '9px "Press Start 2P"';
-    ctx.fillText(`P1: ${players[0].score}   P2: ${players[1].score}`, W / 2, H / 2 - 22);
-
-    ctx.fillStyle = '#5f6f80';
-    ctx.font = '8px "Press Start 2P"';
-    ctx.fillText(winnerText, W / 2, H / 2 + 4);
-
-    ctx.fillStyle = '#5d875e';
-    ctx.font = '7px "Press Start 2P"';
-    ctx.fillText('SPACE / CLICK TO RESTART', W / 2, H / 2 + 30);
-
-    ctx.textAlign = 'left';
-    ctx.shadowBlur = 0;
+    ctx.fillStyle = COLORS.hudSurfaceStrong;
+    this._roundRect(ctx, x + 10, y + 10, w - 20, h - 20, 14);
+    ctx.fill();
   }
 
   _roundRect(ctx, x, y, w, h, r) {
