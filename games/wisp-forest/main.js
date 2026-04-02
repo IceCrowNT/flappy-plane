@@ -16,6 +16,123 @@ const ui = {
   resumeButton: document.getElementById('resumeButton'),
 };
 
+function readThemeToken(name, fallback) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+}
+
+const PALETTE = {
+  skyTop: readThemeToken('--theme-sky-top', '#8fc8e8'),
+  skyMid: readThemeToken('--theme-sky-mid', '#b9dff0'),
+  skyBottom: readThemeToken('--theme-sky-bottom', '#e3f3f7'),
+  cloud: readThemeToken('--theme-cloud', '#f8f4de'),
+  meadowLight: readThemeToken('--theme-meadow-light', '#c5dc7d'),
+  meadow: readThemeToken('--theme-meadow', '#9cc56a'),
+  meadowDeep: readThemeToken('--theme-meadow-deep', '#7ca35d'),
+  forest: readThemeToken('--theme-forest', '#355a47'),
+  forestDeep: readThemeToken('--theme-forest-deep', '#243f34'),
+  wood: readThemeToken('--theme-wood', '#8c6548'),
+  woodDeep: readThemeToken('--theme-wood-deep', '#6f4f39'),
+  ink: readThemeToken('--theme-ink', '#5c5147'),
+  roof: readThemeToken('--theme-roof', '#c97b5a'),
+  lantern: readThemeToken('--theme-lantern', '#f3c977'),
+  crystal: readThemeToken('--theme-crystal', '#8dd9d0'),
+  crystalBlue: readThemeToken('--theme-crystal-blue', '#7cc8f2'),
+  moonViolet: readThemeToken('--theme-moon-violet', '#7e6bc4'),
+  stone: readThemeToken('--theme-stone', '#b8ae9b'),
+  surface: readThemeToken('--theme-surface', 'rgba(252, 248, 234, 0.92)'),
+  surfaceStrong: readThemeToken('--theme-surface-strong', 'rgba(245, 238, 218, 0.96)'),
+  text: readThemeToken('--theme-text', '#4d433b'),
+};
+
+const SCENE_ASSET_PATHS = {
+  floatingIsland: '/games/wisp-forest/assets/floating-island.svg',
+  shrineGate: '/games/wisp-forest/assets/shrine-gate.svg',
+  greatTree: '/games/wisp-forest/assets/great-tree.svg',
+  crystalCluster: '/games/wisp-forest/assets/crystal-cluster.svg',
+  bgFarForest: '/games/wisp-forest/assets/bg-far-forest.svg',
+  bgMidForest: '/games/wisp-forest/assets/bg-mid-forest.svg',
+  bgForegroundRoots: '/games/wisp-forest/assets/bg-foreground-roots.svg',
+  ropeBridge: '/games/wisp-forest/assets/rope-bridge.svg',
+  ruinColumn: '/games/wisp-forest/assets/ruin-column.svg',
+  playerWisp: '/games/wisp-forest/assets/player-wisp.svg',
+  playerWispAlt: '/games/wisp-forest/assets/player-wisp-alt.svg',
+  enemyCrawler: '/games/wisp-forest/assets/enemy-crawler.svg',
+  enemyCrawlerAlt: '/games/wisp-forest/assets/enemy-crawler-alt.svg',
+  enemyWatcher: '/games/wisp-forest/assets/enemy-watcher.svg',
+  enemyWatcherAlt: '/games/wisp-forest/assets/enemy-watcher-alt.svg',
+  bossSentinel: '/games/wisp-forest/assets/boss-sentinel.svg',
+  bossSentinelAlt: '/games/wisp-forest/assets/boss-sentinel-alt.svg',
+};
+
+const sceneAssets = {};
+
+function loadSceneAsset(key, src) {
+  const image = new Image();
+  image.decoding = 'async';
+  image.src = src;
+  sceneAssets[key] = { image, ready: false };
+  image.addEventListener('load', () => {
+    sceneAssets[key].ready = true;
+  });
+  image.addEventListener('error', () => {
+    sceneAssets[key].ready = false;
+  });
+}
+
+function primeSceneAssets() {
+  Object.entries(SCENE_ASSET_PATHS).forEach(([key, src]) => loadSceneAsset(key, src));
+}
+
+function drawSceneAsset(key, x, y, width, height, depth = 1, alpha = 1) {
+  const asset = sceneAssets[key];
+  if (!asset || !asset.ready) return false;
+  const screenX = x - camera.x * depth;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(asset.image, screenX, y, width, height);
+  ctx.restore();
+  return true;
+}
+
+function drawSceneAssetTransformed(key, x, y, width, height, options = {}) {
+  const asset = sceneAssets[key];
+  if (!asset || !asset.ready) return false;
+  const {
+    depth = 1,
+    alpha = 1,
+    rotation = 0,
+    scaleX = 1,
+    scaleY = 1,
+    anchorX = 0.5,
+    anchorY = 0.5,
+    flipX = false,
+  } = options;
+  const screenX = x - camera.x * depth;
+  const pivotX = screenX + width * anchorX;
+  const pivotY = y + height * anchorY;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(pivotX, pivotY);
+  ctx.rotate(rotation);
+  ctx.scale(flipX ? -scaleX : scaleX, scaleY);
+  ctx.drawImage(asset.image, -width * anchorX, -height * anchorY, width, height);
+  ctx.restore();
+  return true;
+}
+
+function drawRepeatingAsset(key, y, width, height, depth = 1, alpha = 1) {
+  const asset = sceneAssets[key];
+  if (!asset || !asset.ready) return false;
+  const offset = (camera.x * depth) % width;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  for (let x = -offset - width; x < canvas.width + width; x += width) {
+    ctx.drawImage(asset.image, x, y, width, height);
+  }
+  ctx.restore();
+  return true;
+}
+
 const WORLD = {
   width: 4200,
   height: 540,
@@ -143,7 +260,23 @@ function circleRectOverlap(c, r) {
 }
 
 function burst(x, y, color, count = 10, force = 1) {
-  for (let i = 0; i < count; i += 1) state.particles.push({ x, y, vx: (Math.random() - 0.5) * 4 * force, vy: ((Math.random() - 0.5) * 4 - 1.4) * force, life: 28 + Math.random() * 30, maxLife: 58, color, size: 2 + Math.random() * 3 });
+  for (let i = 0; i < count; i += 1) state.particles.push({ x, y, vx: (Math.random() - 0.5) * 4 * force, vy: ((Math.random() - 0.5) * 4 - 1.4) * force, life: 28 + Math.random() * 30, maxLife: 58, color, size: 2 + Math.random() * 3, type: 'spark' });
+}
+
+function trailBurst(x, y, color, direction = 1, count = 6) {
+  for (let i = 0; i < count; i += 1) {
+    state.particles.push({
+      x,
+      y,
+      vx: -direction * (1.8 + Math.random() * 2.8),
+      vy: (Math.random() - 0.5) * 1.4,
+      life: 12 + Math.random() * 10,
+      maxLife: 22,
+      color,
+      size: 4 + Math.random() * 4,
+      type: 'streak',
+    });
+  }
 }
 
 function resetActor() {
@@ -521,6 +654,9 @@ function update() {
     updateEnemyShots();
     if (level.boss.defeated && rectsOverlap(player, { x: level.shrine.x - 20, y: level.shrine.y, w: level.shrine.w + 40, h: level.shrine.h + 80 })) winGame();
   }
+  if (player.dashing > 0) {
+    trailBurst(player.x + player.w / 2, player.y + player.h / 2, PALETTE.crystal, player.facing, 3);
+  }
   updateParticles();
   updateCamera();
   if (state.messageTimer > 0 && !state.messagePinned) {
@@ -531,17 +667,56 @@ function update() {
 }
 
 function bg() {
+  if (drawRepeatingAsset('bgFarForest', 0, 1600, 540, 0.06, 1)) {
+    drawCloudBank(120, 98, 1.1, 0.1);
+    drawCloudBank(500, 162, 0.86, 0.14);
+    drawCloudBank(910, 120, 1.24, 0.08);
+    drawDistantIsland(980, 138, 0.08, 0.9);
+    drawDistantIsland(1580, 112, 0.12, 0.68);
+    drawDistantShrine(2560, 186, 0.2, 0.75);
+    if (!drawRepeatingAsset('bgMidForest', 158, 1600, 382, 0.18, 0.9)) {
+      for (let i = 0; i < 4; i += 1) {
+        const depth = 0.18 + i * 0.16;
+        const off = camera.x * depth;
+        ctx.fillStyle = [PALETTE.meadowLight, PALETTE.meadow, PALETTE.forest, PALETTE.forestDeep][i];
+        ctx.beginPath();
+        ctx.moveTo(-220 - off, canvas.height);
+        for (let x = -220; x <= canvas.width + 320; x += 140) {
+          const peak = 210 + i * 50 + Math.sin((x + off + i * 80) / 110) * (24 + i * 8);
+          ctx.quadraticCurveTo(x + 50, peak, x + 140, canvas.height);
+        }
+        ctx.lineTo(canvas.width + 400, canvas.height);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    return;
+  }
+
   const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  sky.addColorStop(0, '#122637');
-  sky.addColorStop(0.48, '#173246');
-  sky.addColorStop(1, '#08131d');
+  sky.addColorStop(0, PALETTE.skyTop);
+  sky.addColorStop(0.5, PALETTE.skyMid);
+  sky.addColorStop(1, PALETTE.skyBottom);
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const sun = ctx.createRadialGradient(canvas.width * 0.76, 96, 10, canvas.width * 0.76, 96, 110);
+  sun.addColorStop(0, 'rgba(248, 244, 222, 0.95)');
+  sun.addColorStop(0.36, 'rgba(243, 201, 119, 0.34)');
+  sun.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = sun;
+  ctx.beginPath();
+  ctx.arc(canvas.width * 0.76, 96, 110, 0, Math.PI * 2);
+  ctx.fill();
+
+  drawCloudBank(120, 98, 1.1, 0.1);
+  drawCloudBank(500, 162, 0.86, 0.14);
+  drawCloudBank(910, 120, 1.24, 0.08);
 
   for (let i = 0; i < 4; i += 1) {
     const depth = 0.18 + i * 0.16;
     const off = camera.x * depth;
-    ctx.fillStyle = ['#142a35', '#10232b', '#0d1d27', '#09161f'][i];
+    ctx.fillStyle = [PALETTE.meadowLight, PALETTE.meadow, PALETTE.forest, PALETTE.forestDeep][i];
     ctx.beginPath();
     ctx.moveTo(-220 - off, canvas.height);
     for (let x = -220; x <= canvas.width + 320; x += 140) {
@@ -552,6 +727,10 @@ function bg() {
     ctx.closePath();
     ctx.fill();
   }
+
+  drawDistantIsland(980, 138, 0.08, 0.9);
+  drawDistantIsland(1580, 112, 0.12, 0.68);
+  drawDistantShrine(2560, 186, 0.2, 0.75);
 }
 
 function cameraBegin() {
@@ -574,25 +753,285 @@ function glow(x, y, r, color) {
   ctx.fill();
 }
 
+function drawCloudBank(worldX, y, scale, depth) {
+  const x = worldX - camera.x * depth;
+  const w = 132 * scale;
+  const h = 36 * scale;
+  ctx.fillStyle = PALETTE.cloud;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, h / 2);
+  ctx.fill();
+
+  const puffs = [
+    [w * 0.18, -h * 0.48, h * 0.72],
+    [w * 0.48, -h * 0.66, h * 0.94],
+    [w * 0.76, -h * 0.42, h * 0.62],
+  ];
+  puffs.forEach(([dx, dy, r]) => {
+    ctx.beginPath();
+    ctx.arc(x + dx, y + dy + h * 0.5, r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = 'rgba(197, 219, 234, 0.74)';
+  ctx.beginPath();
+  ctx.roundRect(x + 10 * scale, y + h * 0.55, w - 20 * scale, h * 0.2, h);
+  ctx.fill();
+}
+
+function drawDistantIsland(worldX, y, depth, scale) {
+  if (drawSceneAsset('floatingIsland', worldX - 88 * scale, y - 62 * scale, 176 * scale, 132 * scale, depth, 0.82)) return;
+  const x = worldX - camera.x * depth;
+  const width = 180 * scale;
+  const height = 62 * scale;
+  ctx.fillStyle = PALETTE.meadowLight;
+  ctx.beginPath();
+  ctx.ellipse(x, y, width * 0.44, height * 0.28, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = PALETTE.wood;
+  ctx.beginPath();
+  ctx.moveTo(x - width * 0.28, y + 6 * scale);
+  ctx.lineTo(x + width * 0.24, y + 6 * scale);
+  ctx.lineTo(x + width * 0.1, y + height);
+  ctx.lineTo(x - width * 0.12, y + height * 0.92);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = PALETTE.forest;
+  ctx.fillRect(x - 10 * scale, y - 30 * scale, 16 * scale, 32 * scale);
+  ctx.beginPath();
+  ctx.arc(x - 2 * scale, y - 38 * scale, 26 * scale, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawDistantShrine(worldX, y, depth, scale) {
+  if (drawSceneAsset('shrineGate', worldX - 74 * scale, y - 74 * scale, 148 * scale, 138 * scale, depth, 0.7)) return;
+  const x = worldX - camera.x * depth;
+  ctx.fillStyle = PALETTE.stone;
+  ctx.fillRect(x - 46 * scale, y, 92 * scale, 16 * scale);
+  ctx.fillRect(x - 28 * scale, y - 34 * scale, 12 * scale, 34 * scale);
+  ctx.fillRect(x + 16 * scale, y - 34 * scale, 12 * scale, 34 * scale);
+  ctx.fillStyle = PALETTE.woodDeep;
+  ctx.beginPath();
+  ctx.moveTo(x - 40 * scale, y - 18 * scale);
+  ctx.lineTo(x, y - 54 * scale);
+  ctx.lineTo(x + 40 * scale, y - 18 * scale);
+  ctx.closePath();
+  ctx.fill();
+  glow(worldX, y - 24 * scale, 36 * scale, 'rgba(141, 217, 208, 0.22)');
+}
+
+function drawLanternPost(worldX, groundY, scale = 1) {
+  const x = worldX - camera.x;
+  ctx.fillStyle = PALETTE.woodDeep;
+  ctx.fillRect(x, groundY - 58 * scale, 6 * scale, 58 * scale);
+  ctx.fillRect(x - 2 * scale, groundY - 58 * scale, 18 * scale, 5 * scale);
+  ctx.fillStyle = PALETTE.lantern;
+  ctx.fillRect(x + 7 * scale, groundY - 49 * scale, 10 * scale, 14 * scale);
+  glow(worldX + 12 * scale, groundY - 42 * scale, 22 * scale, 'rgba(243, 201, 119, 0.34)');
+}
+
+function drawCrystalCluster(worldX, groundY, scale = 1, depth = 1) {
+  if (drawSceneAsset('crystalCluster', worldX - 54 * scale, groundY - 88 * scale, 108 * scale, 88 * scale, depth, 0.94)) return;
+  const x = worldX - camera.x * depth;
+  const crystals = [
+    { dx: 0, h: 56, w: 22, color: PALETTE.crystalBlue },
+    { dx: -18, h: 38, w: 16, color: PALETTE.crystal },
+    { dx: 18, h: 44, w: 18, color: PALETTE.crystal },
+  ];
+  crystals.forEach(crystal => {
+    ctx.fillStyle = crystal.color;
+    ctx.beginPath();
+    ctx.moveTo(x + crystal.dx, groundY - crystal.h * scale);
+    ctx.lineTo(x + crystal.dx + crystal.w * scale * 0.5, groundY - crystal.h * scale * 0.34);
+    ctx.lineTo(x + crystal.dx + crystal.w * scale * 0.28, groundY);
+    ctx.lineTo(x + crystal.dx - crystal.w * scale * 0.28, groundY);
+    ctx.lineTo(x + crystal.dx - crystal.w * scale * 0.5, groundY - crystal.h * scale * 0.34);
+    ctx.closePath();
+    ctx.fill();
+  });
+  glow(worldX, groundY - 28 * scale, 34 * scale, 'rgba(141, 217, 208, 0.18)');
+}
+
+function drawGreatTree(worldX, groundY, scale = 1) {
+  if (drawSceneAsset('greatTree', worldX - 74 * scale, groundY - 200 * scale, 160 * scale, 204 * scale, 1, 0.96)) {
+    drawLanternPost(worldX + 26 * scale, groundY - 4 * scale, 0.6 * scale);
+    return;
+  }
+  const x = worldX - camera.x;
+  ctx.fillStyle = PALETTE.woodDeep;
+  ctx.beginPath();
+  ctx.moveTo(x - 14 * scale, groundY);
+  ctx.quadraticCurveTo(x - 28 * scale, groundY - 64 * scale, x - 8 * scale, groundY - 124 * scale);
+  ctx.quadraticCurveTo(x + 10 * scale, groundY - 160 * scale, x + 14 * scale, groundY - 124 * scale);
+  ctx.quadraticCurveTo(x + 34 * scale, groundY - 70 * scale, x + 18 * scale, groundY);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = PALETTE.forest;
+  [
+    [x - 34 * scale, groundY - 146 * scale, 42 * scale],
+    [x + 18 * scale, groundY - 154 * scale, 48 * scale],
+    [x - 4 * scale, groundY - 178 * scale, 54 * scale],
+    [x + 42 * scale, groundY - 126 * scale, 34 * scale],
+  ].forEach(([cx, cy, r]) => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  drawLanternPost(worldX + 26 * scale, groundY - 4 * scale, 0.6 * scale);
+}
+
+function drawShrineArch(worldX, groundY, scale = 1) {
+  const x = worldX - camera.x;
+  ctx.fillStyle = PALETTE.stone;
+  ctx.fillRect(x - 58 * scale, groundY - 84 * scale, 20 * scale, 84 * scale);
+  ctx.fillRect(x + 38 * scale, groundY - 84 * scale, 20 * scale, 84 * scale);
+  ctx.fillRect(x - 66 * scale, groundY - 102 * scale, 132 * scale, 18 * scale);
+  ctx.fillStyle = PALETTE.woodDeep;
+  ctx.beginPath();
+  ctx.moveTo(x - 74 * scale, groundY - 94 * scale);
+  ctx.lineTo(x, groundY - 142 * scale);
+  ctx.lineTo(x + 74 * scale, groundY - 94 * scale);
+  ctx.closePath();
+  ctx.fill();
+  drawCrystalCluster(worldX - 44 * scale, groundY, 0.8 * scale);
+  drawCrystalCluster(worldX + 46 * scale, groundY, 0.72 * scale);
+}
+
+function drawWorldProps() {
+  drawGreatTree(214, 470, 0.92);
+  drawLanternPost(548, 468, 0.8);
+  drawCrystalCluster(932, 470, 1);
+  drawShrineArch(1548, 470, 0.82);
+  drawRopeBridge(1578, 334, 210, 0.78);
+  drawGreatTree(1836, 470, 0.78);
+  drawLanternPost(2268, 468, 0.74);
+  drawCrystalCluster(2694, 470, 1.12);
+  drawShrineArch(3338, 470, 0.96);
+  drawBossArenaDecor();
+}
+
+function drawForegroundCanopy() {
+  for (let i = -40; i < canvas.width + 80; i += 150) {
+    const wobble = Math.sin((state.time + i) / 44) * 4;
+    ctx.fillStyle = PALETTE.forest;
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.quadraticCurveTo(i + 46, 18 + wobble, i + 84, 0);
+    ctx.quadraticCurveTo(i + 110, 34 + wobble, i + 146, 0);
+    ctx.lineTo(i + 146, -40);
+    ctx.lineTo(i, -40);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function drawRopeBridge(worldX, y, width, sag = 0.7) {
+  if (drawSceneAsset('ropeBridge', worldX - 8, y - 22, width + 16, 64, 1, 0.96)) return;
+  const x = worldX - camera.x;
+  ctx.strokeStyle = PALETTE.woodDeep;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(x + width * 0.5, y + 22 * sag, x + width, y - 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x, y - 18);
+  ctx.quadraticCurveTo(x + width * 0.5, y + 10 * sag, x + width, y - 20);
+  ctx.stroke();
+  for (let i = 0; i <= 8; i += 1) {
+    const t = i / 8;
+    const px = x + width * t;
+    const py = y + Math.sin(t * Math.PI) * 18 * sag;
+    ctx.strokeStyle = PALETTE.woodDeep;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px, py - 14);
+    ctx.lineTo(px, py + 3);
+    ctx.stroke();
+    ctx.fillStyle = PALETTE.wood;
+    ctx.fillRect(px - 8, py + 1, 16, 4);
+  }
+}
+
+function drawFireflyField(depth = 0.22) {
+  for (let i = 0; i < 18; i += 1) {
+    const x = ((i * 196) - camera.x * depth + (state.time * 0.35 * (i % 2 === 0 ? 1 : -1))) % (canvas.width + 140);
+    const y = 170 + (i % 5) * 56 + Math.sin((state.time + i * 14) / 24) * 8;
+    const px = (x + canvas.width + 140) % (canvas.width + 140) - 70;
+    const glowField = ctx.createRadialGradient(px, y, 0, px, y, 12);
+    glowField.addColorStop(0, 'rgba(243, 201, 119, 0.65)');
+    glowField.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glowField;
+    ctx.beginPath();
+    ctx.arc(px, y, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = PALETTE.cloud;
+    ctx.beginPath();
+    ctx.arc(px, y, 2 + (i % 2), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawBossArenaDecor() {
+  if (camera.x > WORLD.bossGateX - canvas.width && (state.gateOpen || level.boss.awakened || level.boss.defeated)) {
+    drawCrystalCluster(3650, 470, 1.36);
+    drawCrystalCluster(3898, 470, 1.12);
+    drawLanternPost(3732, 468, 0.86);
+    drawLanternPost(4018, 468, 0.86);
+    drawRuinColumn(3604, 470, 1.1);
+    drawRuinColumn(4048, 470, 1.1);
+  }
+}
+
+function drawRuinColumn(worldX, groundY, scale = 1) {
+  if (drawSceneAsset('ruinColumn', worldX - 32 * scale, groundY - 118 * scale, 64 * scale, 118 * scale, 1, 0.96)) return;
+  const x = worldX - camera.x;
+  ctx.fillStyle = PALETTE.stone;
+  ctx.fillRect(x - 14 * scale, groundY - 106 * scale, 28 * scale, 106 * scale);
+  ctx.fillRect(x - 22 * scale, groundY - 116 * scale, 44 * scale, 12 * scale);
+  ctx.fillRect(x - 20 * scale, groundY - 12 * scale, 40 * scale, 12 * scale);
+  ctx.fillStyle = PALETTE.woodDeep;
+  ctx.fillRect(x - 6 * scale, groundY - 96 * scale, 12 * scale, 88 * scale);
+  glow(worldX, groundY - 68 * scale, 24 * scale, 'rgba(141, 217, 208, 0.14)');
+}
+
 function drawPlatform(p) {
   const x = p.x - camera.x;
-  ctx.fillStyle = '#183426';
+  ctx.fillStyle = PALETTE.woodDeep;
   ctx.fillRect(x, p.y, p.w, p.h);
-  ctx.fillStyle = '#2f5d3f';
+  ctx.fillStyle = PALETTE.forest;
   ctx.fillRect(x, p.y, p.w, 10);
+  ctx.fillStyle = PALETTE.stone;
+  for (let i = 12; i < p.w; i += 48) {
+    ctx.fillRect(x + i, p.y + 20, 14, 8);
+  }
   for (let i = 0; i < p.w; i += 26) {
-    ctx.fillStyle = 'rgba(145,255,193,0.28)';
+    ctx.fillStyle = 'rgba(197, 220, 125, 0.34)';
     ctx.beginPath();
     ctx.arc(x + i + 8, p.y + 8, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  for (let i = 18; i < p.w - 10; i += 74) {
+    ctx.strokeStyle = PALETTE.forest;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + i, p.y + p.h * 0.3);
+    ctx.quadraticCurveTo(x + i + 8, p.y + p.h * 0.56, x + i - 4, p.y + p.h * 0.82);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x + i - 4, p.y + p.h * 0.82, 3, 0, Math.PI * 2);
+    ctx.fillStyle = PALETTE.meadowLight;
     ctx.fill();
   }
 }
 
 function drawHazard(h) {
   const x = h.x - camera.x;
-  ctx.fillStyle = '#431d26';
+  ctx.fillStyle = PALETTE.woodDeep;
   ctx.fillRect(x, h.y + 18, h.w, h.h - 18);
-  ctx.fillStyle = '#b94f72';
+  ctx.fillStyle = PALETTE.roof;
   for (let i = 0; i < h.w; i += 18) {
     ctx.beginPath();
     ctx.moveTo(x + i, h.y + h.h);
@@ -605,13 +1044,13 @@ function drawHazard(h) {
 
 function drawCheckpoint(cp) {
   const x = cp.x - camera.x;
-  ctx.strokeStyle = cp.active ? '#fff4ad' : 'rgba(190,243,224,0.46)';
+  ctx.strokeStyle = cp.active ? PALETTE.lantern : 'rgba(141, 217, 208, 0.56)';
   ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(x, cp.y);
   ctx.lineTo(x, cp.y - 72);
   ctx.stroke();
-  glow(cp.x + 4, cp.y - 68, 26, cp.active ? 'rgba(255,244,173,0.88)' : 'rgba(154,244,226,0.56)');
+  glow(cp.x + 4, cp.y - 68, 26, cp.active ? 'rgba(243, 201, 119, 0.82)' : 'rgba(141, 217, 208, 0.52)');
 }
 
 function drawWisp(w) {
@@ -619,14 +1058,14 @@ function drawWisp(w) {
   const x = w.x - camera.x;
   const pulse = 12 + Math.sin((state.time + w.x) / 18) * 2;
   const g = ctx.createRadialGradient(x, w.y, 0, x, w.y, 26);
-  g.addColorStop(0, 'rgba(255,246,181,0.94)');
-  g.addColorStop(0.45, 'rgba(156,255,224,0.52)');
+  g.addColorStop(0, 'rgba(243, 201, 119, 0.94)');
+  g.addColorStop(0.45, 'rgba(141, 217, 208, 0.52)');
   g.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = g;
   ctx.beginPath();
   ctx.arc(x, w.y, 26, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#f5ffcf';
+  ctx.fillStyle = PALETTE.cloud;
   ctx.beginPath();
   ctx.arc(x, w.y, pulse, 0, Math.PI * 2);
   ctx.fill();
@@ -634,55 +1073,107 @@ function drawWisp(w) {
 
 function drawEnemy(enemy) {
   if (!enemy.alive) return;
+  const enemyFrameAlt = enemy.type === 'watcher'
+    ? Math.floor((state.time + enemy.x) / 10) % 2 === 0
+    : Math.floor((state.time + enemy.x) / 14) % 2 === 0;
+  const enemyAssetKey = enemy.type === 'watcher'
+    ? (enemyFrameAlt ? 'enemyWatcherAlt' : 'enemyWatcher')
+    : (enemyFrameAlt ? 'enemyCrawlerAlt' : 'enemyCrawler');
+  const hoverBob = enemy.type === 'watcher' ? Math.sin((state.time + enemy.x) / 10) * 2 : 0;
+  const tilt = enemy.type === 'watcher' ? Math.sin((state.time + enemy.x) / 22) * 0.05 : enemy.dir * 0.06;
+  const scaleY = enemy.type === 'crawler' ? 1 + Math.sin((state.time + enemy.x) / 16) * 0.03 : 1;
+  if (drawSceneAssetTransformed(enemyAssetKey, enemy.x - enemy.w * 0.72, enemy.y - enemy.h * 0.78 + hoverBob, enemy.w * 2.2, enemy.h * 2.2, { rotation: tilt, scaleY, flipX: enemy.dir < 0 })) {
+    glow(enemy.x + enemy.w / 2, enemy.y + 14, 26, enemy.type === 'watcher' ? 'rgba(243, 201, 119, 0.34)' : 'rgba(169, 138, 209, 0.28)');
+    return;
+  }
   const x = enemy.x - camera.x;
-  glow(enemy.x + enemy.w / 2, enemy.y + 14, 26, enemy.type === 'watcher' ? 'rgba(255,227,172,0.38)' : 'rgba(255,173,196,0.40)');
-  ctx.fillStyle = enemy.type === 'watcher' ? '#fff4d1' : '#dbe6f2';
+  glow(enemy.x + enemy.w / 2, enemy.y + 14, 26, enemy.type === 'watcher' ? 'rgba(243, 201, 119, 0.34)' : 'rgba(169, 138, 209, 0.28)');
+  ctx.fillStyle = enemy.type === 'watcher' ? PALETTE.surfaceStrong : PALETTE.stone;
   ctx.beginPath();
   ctx.ellipse(x + enemy.w / 2, enemy.y + 18, 16, 18, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = enemy.type === 'watcher' ? '#845f1c' : '#6f2741';
+  ctx.fillStyle = enemy.type === 'watcher' ? PALETTE.wood : PALETTE.moonViolet;
   ctx.beginPath();
   ctx.moveTo(x + 8, enemy.y + 14);
   ctx.lineTo(x + enemy.w / 2, enemy.y + enemy.h);
   ctx.lineTo(x + enemy.w - 8, enemy.y + 14);
   ctx.closePath();
   ctx.fill();
+  ctx.fillStyle = PALETTE.ink;
+  ctx.fillRect(x + enemy.w * 0.34, enemy.y + 12, 4, 4);
+  ctx.fillRect(x + enemy.w * 0.54, enemy.y + 12, 4, 4);
 }
 
 function drawBoss() {
   const boss = level.boss;
   if ((!boss.active && !boss.defeated) || boss.hp <= 0) return;
+  const pulse = 1 + Math.sin(state.time / 14) * 0.025;
+  const rotation = Math.sin(state.time / 20) * 0.03 + (boss.dash > 0 ? boss.vx * 0.015 : 0);
+  const bossAssetKey = boss.phase === 2 || Math.floor(state.time / 12) % 2 === 0 ? 'bossSentinelAlt' : 'bossSentinel';
+  if (drawSceneAssetTransformed(bossAssetKey, boss.x - 44, boss.y - 36, 172, 172, { rotation, scaleX: pulse, scaleY: pulse })) {
+    glow(boss.x + boss.w / 2, boss.y + boss.h / 2, 82, boss.phase === 2 ? 'rgba(243, 201, 119, 0.42)' : 'rgba(141, 217, 208, 0.28)');
+    ctx.fillStyle = PALETTE.lantern;
+    ctx.fillRect(24, 24, 220, 10);
+    ctx.fillStyle = PALETTE.woodDeep;
+    ctx.fillRect(24 + (boss.hp / boss.maxHp) * 220, 24, 220 - (boss.hp / boss.maxHp) * 220, 10);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.strokeRect(24, 24, 220, 10);
+    return;
+  }
   const x = boss.x - camera.x;
-  glow(boss.x + boss.w / 2, boss.y + boss.h / 2, 82, boss.phase === 2 ? 'rgba(255,222,136,0.42)' : 'rgba(185,255,228,0.28)');
-  ctx.fillStyle = '#f4fff8';
+  glow(boss.x + boss.w / 2, boss.y + boss.h / 2, 82, boss.phase === 2 ? 'rgba(243, 201, 119, 0.42)' : 'rgba(141, 217, 208, 0.28)');
+  ctx.fillStyle = PALETTE.surface;
   ctx.beginPath();
   ctx.ellipse(x + boss.w / 2, boss.y + 38, 28, 34, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = boss.phase === 2 ? '#ffca68' : '#8af2de';
+  ctx.fillStyle = boss.phase === 2 ? PALETTE.lantern : PALETTE.crystal;
   ctx.beginPath();
   ctx.arc(x + boss.w / 2, boss.y + 32, 12, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#f7e3b4';
+  ctx.fillStyle = PALETTE.ink;
+  ctx.fillRect(x + 28, boss.y + 26, 5, 5);
+  ctx.fillRect(x + 51, boss.y + 26, 5, 5);
+  ctx.strokeStyle = PALETTE.woodDeep;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x + 20, boss.y + 62);
+  ctx.quadraticCurveTo(x + boss.w / 2, boss.y + 86, x + boss.w - 20, boss.y + 62);
+  ctx.stroke();
+  ctx.fillStyle = PALETTE.lantern;
   ctx.fillRect(24, 24, 220, 10);
-  ctx.fillStyle = '#273840';
+  ctx.fillStyle = PALETTE.woodDeep;
   ctx.fillRect(24 + (boss.hp / boss.maxHp) * 220, 24, 220 - (boss.hp / boss.maxHp) * 220, 10);
   ctx.strokeStyle = 'rgba(255,255,255,0.3)';
   ctx.strokeRect(24, 24, 220, 10);
 }
 
 function drawShrine() {
+  if (drawSceneAsset('shrineGate', level.shrine.x - 44, level.shrine.y - 10, 198, 186, 1, 0.98)) {
+    drawLanternPost(level.shrine.x - 34, level.shrine.y + level.shrine.h + 20, 0.72);
+    drawLanternPost(level.shrine.x + level.shrine.w + 18, level.shrine.y + level.shrine.h + 20, 0.72);
+    return;
+  }
   const x = level.shrine.x - camera.x;
-  ctx.fillStyle = '#243841';
+  ctx.fillStyle = PALETTE.stone;
   ctx.fillRect(x, level.shrine.y + 24, level.shrine.w, level.shrine.h);
-  ctx.fillStyle = level.boss.defeated ? '#fff0a3' : (state.gateOpen ? '#89f2de' : '#2f515e');
+  ctx.fillStyle = PALETTE.woodDeep;
+  ctx.beginPath();
+  ctx.moveTo(x - 8, level.shrine.y + 40);
+  ctx.lineTo(x + level.shrine.w / 2, level.shrine.y - 6);
+  ctx.lineTo(x + level.shrine.w + 8, level.shrine.y + 40);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = level.boss.defeated ? PALETTE.lantern : (state.gateOpen ? PALETTE.crystal : PALETTE.forest);
   ctx.fillRect(x + 18, level.shrine.y + 40, level.shrine.w - 36, level.shrine.h - 26);
+  drawLanternPost(level.shrine.x - 34, level.shrine.y + level.shrine.h + 20, 0.72);
+  drawLanternPost(level.shrine.x + level.shrine.w + 18, level.shrine.y + level.shrine.h + 20, 0.72);
 }
 
 function drawShots(collection) {
   collection.forEach(shot => {
     const x = shot.x - camera.x;
-    const color = shot.color ?? '#fff9c7';
-    const outer = shot.color ? `${shot.color}cc` : 'rgba(255,247,186,0.84)';
+    const color = shot.color ?? PALETTE.lantern;
+    const outer = shot.color ? `${shot.color}cc` : 'rgba(243, 201, 119, 0.84)';
     const g = ctx.createRadialGradient(x, shot.y, 0, x, shot.y, 18);
     g.addColorStop(0, outer);
     g.addColorStop(1, 'rgba(0,0,0,0)');
@@ -694,30 +1185,46 @@ function drawShots(collection) {
     ctx.beginPath();
     ctx.arc(x, shot.y, shot.r, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = PALETTE.cloud;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x - 9, shot.y);
+    ctx.lineTo(x - 2, shot.y - 2);
+    ctx.stroke();
   });
 }
 
 function drawPlayer() {
+  const airborne = !player.onGround;
+  const tilt = Math.max(-0.25, Math.min(0.28, player.vx * 0.05 + player.vy * 0.012));
+  const bob = airborne ? Math.sin(state.time / 8) * 1.5 : Math.sin((state.time + player.x) / 14) * 0.8;
+  const squashY = player.dashing > 0 ? 0.88 : (airborne ? 1.04 : 1);
+  const squashX = player.dashing > 0 ? 1.14 : 1;
+  const playerAssetKey = airborne || Math.abs(player.vx) > 1.4 || player.dashing > 0 || Math.floor((state.time + player.x) / 10) % 2 === 0 ? 'playerWispAlt' : 'playerWisp';
+  if (drawSceneAssetTransformed(playerAssetKey, player.x - 18, player.y - 18 + bob, 76, 76, { alpha: player.invuln > 0 && Math.floor(player.invuln / 5) % 2 === 0 ? 0.45 : 1, rotation: tilt, scaleX: squashX, scaleY: squashY, flipX: player.facing < 0 })) {
+    glow(player.x + 14, player.y + 12, 34, 'rgba(248, 244, 222, 0.76)');
+    return;
+  }
   const x = player.x - camera.x;
   const y = player.y;
   const alpha = player.invuln > 0 && Math.floor(player.invuln / 5) % 2 === 0 ? 0.45 : 1;
   ctx.save();
   ctx.globalAlpha = alpha;
   const g = ctx.createRadialGradient(x + 14, y + 12, 6, x + 14, y + 12, 34);
-  g.addColorStop(0, 'rgba(241,255,246,0.72)');
+  g.addColorStop(0, 'rgba(248, 244, 222, 0.76)');
   g.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = g;
   ctx.beginPath();
   ctx.arc(x + 14, y + 12, 34, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#f5fff9';
+  ctx.fillStyle = PALETTE.surface;
   ctx.beginPath();
   ctx.ellipse(x + 14, y + 18, 10, 18, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
   ctx.ellipse(x + 14, y + 7, 7, 9, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#cffff0';
+  ctx.fillStyle = PALETTE.crystal;
   ctx.beginPath();
   ctx.moveTo(x + 14, y + 8);
   ctx.quadraticCurveTo(x + 2, y - 10, x - 6, y + 6);
@@ -736,27 +1243,40 @@ function drawParticles() {
     const x = p.x - camera.x;
     ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
     ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
+    if (p.type === 'streak') {
+      ctx.beginPath();
+      ctx.ellipse(x, p.y, p.size * 1.8, p.size * 0.6, Math.atan2(p.vy, p.vx), 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.arc(x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
   });
   ctx.globalAlpha = 1;
 }
 
 function drawForeground() {
-  ctx.fillStyle = '#091119';
+  if (drawRepeatingAsset('bgForegroundRoots', 310, 1600, 230, 0.32, 0.94)) {
+    drawFireflyField(0.28);
+    drawForegroundCanopy();
+    return;
+  }
+  ctx.fillStyle = PALETTE.forestDeep;
   ctx.fillRect(0, 505, canvas.width, 35);
   for (let i = 0; i < canvas.width; i += 54) {
-    ctx.fillStyle = 'rgba(31,66,55,0.9)';
+    ctx.fillStyle = 'rgba(53, 90, 71, 0.88)';
     ctx.beginPath();
     ctx.moveTo(i, canvas.height);
     ctx.quadraticCurveTo(i + 10, 470, i + 22, canvas.height);
     ctx.fill();
   }
+  drawForegroundCanopy();
+  drawFireflyField(0.28);
 }
 
 function drawHint() {
-  ctx.fillStyle = 'rgba(255,255,255,0.82)';
+  ctx.fillStyle = PALETTE.ink;
   ctx.font = '600 18px Outfit';
   let text = 'Collect 6 wisps to awaken the shrine';
   if (state.phase === 'boss') text = 'Break the Shrine Sentinel core';
@@ -764,14 +1284,30 @@ function drawHint() {
   ctx.fillText(text, 28, 510);
 }
 
+function drawAtmosphereOverlay() {
+  const mist = ctx.createLinearGradient(0, 120, 0, canvas.height);
+  mist.addColorStop(0, 'rgba(248, 244, 222, 0)');
+  mist.addColorStop(0.45, 'rgba(248, 244, 222, 0.08)');
+  mist.addColorStop(1, 'rgba(92, 81, 71, 0.08)');
+  ctx.fillStyle = mist;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const vignette = ctx.createRadialGradient(canvas.width * 0.5, canvas.height * 0.35, 120, canvas.width * 0.5, canvas.height * 0.55, canvas.width * 0.72);
+  vignette.addColorStop(0, 'rgba(0,0,0,0)');
+  vignette.addColorStop(1, 'rgba(53, 90, 71, 0.10)');
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
 function render() {
   bg();
   cameraBegin();
-  glow(330, 320, 150, 'rgba(126,255,217,0.18)');
-  glow(1360, 290, 180, 'rgba(255,238,158,0.16)');
-  glow(2450, 260, 180, 'rgba(126,255,217,0.16)');
-  glow(3410, 240, 210, 'rgba(255,245,180,0.18)');
-  glow(3970, 210, 240, level.boss.active ? 'rgba(255,207,129,0.20)' : 'rgba(138,242,222,0.12)');
+  glow(330, 320, 150, 'rgba(141, 217, 208, 0.18)');
+  glow(1360, 290, 180, 'rgba(243, 201, 119, 0.16)');
+  glow(2450, 260, 180, 'rgba(141, 217, 208, 0.16)');
+  glow(3410, 240, 210, 'rgba(124, 200, 242, 0.16)');
+  glow(3970, 210, 240, level.boss.active ? 'rgba(243, 201, 119, 0.20)' : 'rgba(141, 217, 208, 0.12)');
+  drawWorldProps();
   level.platforms.forEach(drawPlatform);
   level.walls.forEach(drawPlatform);
   level.hazards.forEach(drawHazard);
@@ -786,6 +1322,7 @@ function render() {
   drawParticles();
   drawForeground();
   cameraEnd();
+  drawAtmosphereOverlay();
   drawHint();
 }
 
@@ -832,5 +1369,6 @@ document.addEventListener('keyup', event => {
 ui.startButton.addEventListener('click', startRun);
 ui.resumeButton.addEventListener('click', resumeGame);
 
+primeSceneAssets();
 resetRun(true);
 loop();
