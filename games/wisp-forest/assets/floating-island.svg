@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="180" viewBox="0 0 280 180">
+  <defs>
+    <linearGradient id="grass" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#c5dc7d"/>
+      <stop offset="100%" stop-color="#7ca35d"/>
+    </linearGradient>
+    <linearGradient id="dirt" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#8c6548"/>
+      <stop offset="100%" stop-color="#6f4f39"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="140" cy="72" rx="92" ry="30" fill="url(#grass)"/>
+  <path d="M70 78 L212 78 L188 156 L112 168 L64 130 Z" fill="url(#dirt)"/>
+  <path d="M142 48 C122 10 82 14 78 50 C58 24 18 56 40 86 C24 110 66 120 90 102 C106 122 152 126 166 102 C188 118 238 110 226 80 C252 50 208 24 190 44 C182 14 148 12 142 48 Z" fill="#355a47"/>
+  <rect x="132" y="44" width="12" height="42" rx="6" fill="#6f4f39"/>
+  <rect x="196" y="38" width="8" height="40" rx="4" fill="#b8ae9b"/>
+  <rect x="208" y="32" width="8" height="46" rx="4" fill="#b8ae9b"/>
+  <path d="M176 86 L212 86" stroke="#5c5147" stroke-width="3" stroke-linecap="round"/>
+  <path d="M82 84 L118 84" stroke="#5c5147" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="184" cy="90" r="3" fill="#f8f4de"/>
+</svg>

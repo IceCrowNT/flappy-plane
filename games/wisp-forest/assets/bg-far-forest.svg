@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="540" viewBox="0 0 1600 540">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#8fc8e8"/>
+      <stop offset="55%" stop-color="#b9dff0"/>
+      <stop offset="100%" stop-color="#e3f3f7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="540" fill="url(#sky)"/>
+  <g fill="#f8f4de" opacity="0.96">
+    <ellipse cx="190" cy="104" rx="120" ry="34"/>
+    <ellipse cx="262" cy="86" rx="74" ry="48"/>
+    <ellipse cx="344" cy="102" rx="94" ry="32"/>
+    <ellipse cx="1048" cy="92" rx="126" ry="36"/>
+    <ellipse cx="1138" cy="76" rx="86" ry="50"/>
+    <ellipse cx="1242" cy="100" rx="98" ry="34"/>
+  </g>
+  <g opacity="0.82">
+    <path d="M-80 332 C120 236 232 248 394 314 C522 248 676 232 838 304 C990 240 1140 236 1316 310 C1424 270 1514 266 1688 324 L1688 540 L-80 540 Z" fill="#c5dc7d"/>
+    <path d="M-80 364 C128 276 262 286 430 346 C574 284 720 276 900 344 C1062 288 1200 286 1386 354 C1482 324 1578 322 1688 360 L1688 540 L-80 540 Z" fill="#9cc56a"/>
+    <path d="M-80 408 C84 330 194 338 330 388 C458 344 618 346 744 398 C886 346 1036 346 1182 398 C1320 350 1466 356 1688 410 L1688 540 L-80 540 Z" fill="#7ca35d"/>
+  </g>
+</svg>
