@@ -27,7 +27,7 @@
           <h1>Ori-lite action platformer for the mini game library.</h1>
         </div>
         <p class="subtitle">
-          Run, wall-slide, dash, fire spirit bolts, and survive a shrine boss at the end of the forest.
+          Run, wall-slide, dash, angle spirit bolts upward or diagonally, then cross from the forest into a desert shrine route.
         </p>
       </div>
 
@@ -55,6 +55,11 @@
             <span class="hud-label">State</span>
             <strong id="phaseLabel">Dormant</strong>
           </div>
+          <div class="hud-card">
+            <span class="hud-label">Stage</span>
+            <strong id="stageLabel">Forest I</strong>
+          </div>
+          <button id="muteButton" class="hud-mute" type="button" title="Toggle mute">🔊</button>
         </div>
 
         <div id="centerOverlay" class="center-overlay">
@@ -79,9 +84,10 @@
           <h2>Controls</h2>
           <ul>
             <li>A / D or Left / Right: move</li>
-            <li>Space / W / Up: jump and double jump</li>
+            <li>Space: jump and double jump</li>
             <li>Shift / K: dash</li>
             <li>J / Z: spirit bolt</li>
+            <li>W / Up + J: shoot up, W / Up + A/D + J: shoot diagonal</li>
             <li>P / Esc: pause</li>
             <li>R: restart run</li>
           </ul>
@@ -90,15 +96,15 @@
         <article class="info-card">
           <h2>Goal</h2>
           <p>
-            Collect 6 wisps, open the Shrine Gate, then defeat the Shrine Sentinel before climbing to the sanctum.
+            Restore the forest shrine, cross into the desert ruins, then clear a second sanctum to finish the run.
           </p>
         </article>
 
         <article class="info-card">
           <h2>Design</h2>
           <p>
-            This upgrade is denser than the first slice: energy economy, ranged enemies, pause state, and a proper boss
-            finale instead of a simple finish trigger.
+            The build now runs across two biomes with directional spirit shots, expanded traversal space, and a desert
+            stage that still follows the project global style.
           </p>
         </article>
       </section>

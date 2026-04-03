@@ -1,3 +1,5 @@
+import { audio } from '/games/wisp-forest/audio.js';
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -7,6 +9,7 @@ const ui = {
   energy: document.getElementById('energyValue'),
   checkpoint: document.getElementById('checkpointLabel'),
   phase: document.getElementById('phaseLabel'),
+  stage: document.getElementById('stageLabel'),
   message: document.getElementById('messageBox'),
   overlay: document.getElementById('centerOverlay'),
   overlayEyebrow: document.getElementById('overlayEyebrow'),
@@ -14,6 +17,7 @@ const ui = {
   overlayText: document.getElementById('overlayText'),
   startButton: document.getElementById('startButton'),
   resumeButton: document.getElementById('resumeButton'),
+  muteButton: document.getElementById('muteButton'),
 };
 
 function readThemeToken(name, fallback) {
@@ -39,6 +43,10 @@ const PALETTE = {
   crystalBlue: readThemeToken('--theme-crystal-blue', '#7cc8f2'),
   moonViolet: readThemeToken('--theme-moon-violet', '#7e6bc4'),
   stone: readThemeToken('--theme-stone', '#b8ae9b'),
+  sandLight: readThemeToken('--theme-sand-light', '#e6cf9f'),
+  sandDeep: readThemeToken('--theme-sand-deep', '#c9a46b'),
+  brass: readThemeToken('--theme-brass', '#b89159'),
+  aurora: readThemeToken('--theme-aurora', '#79e2c3'),
   surface: readThemeToken('--theme-surface', 'rgba(252, 248, 234, 0.92)'),
   surfaceStrong: readThemeToken('--theme-surface-strong', 'rgba(245, 238, 218, 0.96)'),
   text: readThemeToken('--theme-text', '#4d433b'),
@@ -134,13 +142,11 @@ function drawRepeatingAsset(key, y, width, height, depth = 1, alpha = 1) {
 }
 
 const WORLD = {
-  width: 4200,
   height: 540,
   gravity: 0.7,
-  requiredWisps: 6,
-  bossGateX: 3280,
-  shrineX: 3960,
 };
+
+const STAGE_ORDER = ['forest', 'desert'];
 
 const keys = new Set();
 const camera = { x: 0, shake: 0 };
@@ -149,8 +155,15 @@ function makeEnemy(type, x, y, minX, maxX, speed, hp) {
   return { type, x, y, baseY: y, w: type === 'watcher' ? 36 : 44, h: type === 'watcher' ? 36 : 40, minX, maxX, speed, hp, maxHp: hp, dir: 1, cooldown: 0, alive: true };
 }
 
-function makeLevel() {
+function makeForestLevel() {
   return {
+    key: 'forest',
+    title: 'Forest I',
+    width: 5400,
+    requiredWisps: 8,
+    bossGateX: 4520,
+    shrineX: 5180,
+    start: { x: 110, y: 370, checkpointName: 'Awakening Pool' },
     platforms: [
       { x: 0, y: 470, w: 520, h: 80 }, { x: 210, y: 390, w: 170, h: 18 }, { x: 480, y: 470, w: 210, h: 80 },
       { x: 680, y: 340, w: 170, h: 18 }, { x: 905, y: 270, w: 140, h: 18 }, { x: 1120, y: 470, w: 240, h: 80 },
@@ -159,22 +172,26 @@ function makeLevel() {
       { x: 2580, y: 360, w: 150, h: 18 }, { x: 2790, y: 300, w: 120, h: 18 }, { x: 2960, y: 470, w: 260, h: 80 },
       { x: 3180, y: 395, w: 200, h: 18 }, { x: 3380, y: 470, w: 240, h: 80 }, { x: 3630, y: 470, w: 580, h: 80 },
       { x: 3530, y: 290, w: 150, h: 18 }, { x: 3850, y: 235, w: 140, h: 18 },
+      { x: 4120, y: 470, w: 260, h: 80 }, { x: 4260, y: 360, w: 160, h: 18 }, { x: 4470, y: 298, w: 140, h: 18 },
+      { x: 4720, y: 470, w: 240, h: 80 }, { x: 4890, y: 360, w: 160, h: 18 }, { x: 5060, y: 470, w: 420, h: 80 },
     ],
     walls: [
-      { x: 1628, y: 250, w: 28, h: 220 }, { x: 3070, y: 245, w: 30, h: 225 }, { x: 3582, y: 180, w: 28, h: 290 },
+      { x: 1628, y: 250, w: 28, h: 220 }, { x: 3070, y: 245, w: 30, h: 225 }, { x: 3582, y: 180, w: 28, h: 290 }, { x: 4660, y: 216, w: 28, h: 254 },
     ],
     hazards: [
       { x: 710, y: 470, w: 250, h: 80 }, { x: 1370, y: 470, w: 210, h: 80 }, { x: 2020, y: 470, w: 180, h: 80 },
-      { x: 2660, y: 470, w: 170, h: 80 }, { x: 3410, y: 470, w: 110, h: 80 },
+      { x: 2660, y: 470, w: 170, h: 80 }, { x: 3410, y: 470, w: 110, h: 80 }, { x: 4380, y: 470, w: 120, h: 80 },
     ],
     checkpoints: [
       { x: 120, y: 426, name: 'Awakening Pool', active: true },
       { x: 1760, y: 426, name: 'Lantern Hollow', active: false },
       { x: 3420, y: 426, name: 'Sanctum Verge', active: false },
+      { x: 4740, y: 426, name: 'Moonroot Rise', active: false },
     ],
     wisps: [
       { x: 292, y: 340, r: 12, found: false }, { x: 760, y: 286, r: 12, found: false }, { x: 1588, y: 248, r: 12, found: false },
       { x: 2165, y: 278, r: 12, found: false }, { x: 2860, y: 260, r: 12, found: false }, { x: 3470, y: 244, r: 12, found: false },
+      { x: 4330, y: 314, r: 12, found: false }, { x: 4950, y: 308, r: 12, found: false },
     ],
     enemies: [
       makeEnemy('crawler', 1200, 430, 1140, 1320, 1.3, 3),
@@ -182,13 +199,66 @@ function makeLevel() {
       makeEnemy('watcher', 2470, 292, 2380, 2720, 1.05, 2),
       makeEnemy('crawler', 3170, 430, 3000, 3210, 1.55, 4),
       makeEnemy('watcher', 3340, 330, 3180, 3520, 1.15, 3),
+      makeEnemy('crawler', 4180, 430, 4120, 4360, 1.55, 4),
+      makeEnemy('watcher', 4870, 324, 4700, 5050, 1.2, 3),
     ],
-    shrine: { x: 3960, y: 190, w: 110, h: 210 },
-    boss: { active: false, awakened: false, defeated: false, x: 3850, y: 170, w: 84, h: 84, vx: 0, vy: 0, hp: 18, maxHp: 18, phase: 1, cooldown: 0, dash: 0 },
+    shrine: { x: 5180, y: 190, w: 110, h: 210 },
+    boss: { active: false, awakened: false, defeated: false, x: 5060, y: 170, w: 84, h: 84, vx: 0, vy: 0, hp: 18, maxHp: 18, phase: 1, cooldown: 0, dash: 0 },
   };
 }
 
-let level = makeLevel();
+function makeDesertLevel() {
+  return {
+    key: 'desert',
+    title: 'Desert II',
+    width: 5000,
+    requiredWisps: 7,
+    bossGateX: 4080,
+    shrineX: 4740,
+    start: { x: 120, y: 370, checkpointName: 'Dune Gate' },
+    platforms: [
+      { x: 0, y: 470, w: 520, h: 80 }, { x: 220, y: 388, w: 180, h: 18 }, { x: 520, y: 470, w: 260, h: 80 },
+      { x: 760, y: 332, w: 150, h: 18 }, { x: 980, y: 272, w: 130, h: 18 }, { x: 1180, y: 470, w: 240, h: 80 },
+      { x: 1340, y: 392, w: 180, h: 18 }, { x: 1580, y: 330, w: 170, h: 18 }, { x: 1820, y: 470, w: 290, h: 80 },
+      { x: 2080, y: 350, w: 160, h: 18 }, { x: 2300, y: 280, w: 150, h: 18 }, { x: 2520, y: 470, w: 260, h: 80 },
+      { x: 2720, y: 390, w: 190, h: 18 }, { x: 2980, y: 320, w: 170, h: 18 }, { x: 3220, y: 470, w: 250, h: 80 },
+      { x: 3440, y: 360, w: 160, h: 18 }, { x: 3640, y: 300, w: 150, h: 18 }, { x: 3880, y: 470, w: 240, h: 80 },
+      { x: 4280, y: 470, w: 220, h: 80 }, { x: 4440, y: 356, w: 160, h: 18 }, { x: 4620, y: 470, w: 380, h: 80 },
+    ],
+    walls: [
+      { x: 1460, y: 260, w: 28, h: 210 }, { x: 2860, y: 250, w: 30, h: 220 }, { x: 4380, y: 250, w: 28, h: 220 },
+    ],
+    hazards: [
+      { x: 840, y: 470, w: 120, h: 80 }, { x: 1680, y: 470, w: 130, h: 80 }, { x: 2440, y: 470, w: 140, h: 80 },
+      { x: 3320, y: 470, w: 140, h: 80 }, { x: 4140, y: 470, w: 110, h: 80 },
+    ],
+    checkpoints: [
+      { x: 120, y: 426, name: 'Dune Gate', active: true },
+      { x: 1900, y: 426, name: 'Sunken Arch', active: false },
+      { x: 3480, y: 426, name: 'Glass Basin', active: false },
+    ],
+    wisps: [
+      { x: 310, y: 332, r: 12, found: false }, { x: 1040, y: 236, r: 12, found: false }, { x: 1530, y: 352, r: 12, found: false },
+      { x: 2140, y: 312, r: 12, found: false }, { x: 3030, y: 282, r: 12, found: false }, { x: 3710, y: 264, r: 12, found: false },
+      { x: 4480, y: 314, r: 12, found: false },
+    ],
+    enemies: [
+      makeEnemy('crawler', 1260, 430, 1190, 1400, 1.35, 3),
+      makeEnemy('watcher', 2050, 302, 1950, 2240, 1.12, 3),
+      makeEnemy('crawler', 2670, 430, 2540, 2760, 1.55, 4),
+      makeEnemy('watcher', 3440, 322, 3340, 3600, 1.2, 3),
+      makeEnemy('crawler', 4340, 430, 4280, 4480, 1.62, 4),
+    ],
+    shrine: { x: 4740, y: 190, w: 110, h: 210 },
+    boss: { active: false, awakened: false, defeated: false, x: 4620, y: 170, w: 84, h: 84, vx: 0, vy: 0, hp: 20, maxHp: 20, phase: 1, cooldown: 0, dash: 0 },
+  };
+}
+
+function makeLevel(stageKey = 'forest') {
+  return stageKey === 'desert' ? makeDesertLevel() : makeForestLevel();
+}
+
+let level = makeLevel('forest');
 
 const player = {
   x: 110, y: 370, w: 28, h: 42, vx: 0, vy: 0, facing: 1, speed: 0.78, maxSpeed: 5.8, airControl: 0.55, friction: 0.82,
@@ -199,6 +269,7 @@ const player = {
 
 const state = {
   phase: 'intro',
+  stageIndex: 0,
   time: 0,
   wisps: 0,
   gateOpen: false,
@@ -210,11 +281,24 @@ const state = {
   messageTimer: 0,
 };
 
+function isDesertStage() {
+  return level.key === 'desert';
+}
+
+function currentStageTitle() {
+  return level.title ?? `Stage ${state.stageIndex + 1}`;
+}
+
+function stageAccentColor() {
+  return isDesertStage() ? PALETTE.sandDeep : PALETTE.crystal;
+}
+
 function syncHud() {
-  ui.wisps.textContent = `${state.wisps} / ${WORLD.requiredWisps}`;
+  ui.wisps.textContent = `${state.wisps} / ${level.requiredWisps}`;
   ui.health.textContent = `${player.health}`;
   ui.energy.textContent = `${Math.round(player.energy)}`;
   ui.checkpoint.textContent = player.checkpointName;
+  if (ui.stage) ui.stage.textContent = currentStageTitle();
   ui.phase.textContent = ({
     intro: 'Dormant',
     playing: state.gateOpen ? 'Shrine Open' : 'Exploring',
@@ -285,16 +369,38 @@ function resetActor() {
   state.enemyShots = [];
 }
 
-function resetRun(intro = true) {
-  level = makeLevel();
-  Object.assign(player, { spawnX: 110, spawnY: 370, checkpointName: 'Awakening Pool' });
-  Object.assign(state, { phase: intro ? 'intro' : 'playing', time: 0, wisps: 0, gateOpen: false, particles: [], shots: [], enemyShots: [], bossLock: false, messagePinned: false, messageTimer: 0 });
+function loadStage(stageIndex, intro = false) {
+  state.stageIndex = stageIndex;
+  level = makeLevel(STAGE_ORDER[stageIndex]);
+  Object.assign(player, {
+    spawnX: level.start.x,
+    spawnY: level.start.y,
+    checkpointName: level.start.checkpointName,
+  });
+  Object.assign(state, {
+    phase: intro ? 'intro' : 'playing',
+    time: 0,
+    wisps: 0,
+    gateOpen: false,
+    particles: [],
+    shots: [],
+    enemyShots: [],
+    bossLock: false,
+    messagePinned: false,
+    messageTimer: 0,
+  });
   camera.x = 0;
   camera.shake = 0;
+  audio.setBossMode(false);
+  audio.stopBgm();
   resetActor();
   syncHud();
+}
+
+function resetRun(intro = true) {
+  loadStage(0, intro);
   if (intro) {
-    overlay('Wisp Forest', 'Awaken the forest', 'Collect wisps, manage energy, survive spirit patrols, then break the shrine sentinel in a final arena.', true, false);
+    overlay('Wisp Forest', 'Awaken the forest', 'Restore the forest shrine, cross into the desert ruins, then clear the final sanctum.', true, false);
     say('Press Start Run to begin.', 999999, true);
   } else {
     hideOverlay();
@@ -302,14 +408,37 @@ function resetRun(intro = true) {
   }
 }
 
+function advanceStage() {
+  const nextStageIndex = state.stageIndex + 1;
+  if (nextStageIndex >= STAGE_ORDER.length) {
+    winGame();
+    return;
+  }
+
+  loadStage(nextStageIndex, false);
+  audio.unlock().then(() => {
+    audio.startBgm();
+  });
+  overlay('Sunreach Dunes', 'Second stage unlocked', 'The forest shrine opens a desert route. Read the wind, angle your spirit shots, and reach the final sanctum.', false, true);
+  state.phase = 'paused';
+  say('Forest restored. The dunes are ahead.', 999999, true);
+  syncHud();
+}
+
 function startRun() {
   ui.startButton.textContent = 'Start Run';
+  audio.unlock().then(() => {
+    audio.setBossMode(false);
+    audio.stopBgm();
+    audio.startBgm();
+  });
   resetRun(false);
 }
 
 function pauseGame() {
   if (state.phase !== 'playing' && state.phase !== 'boss') return;
   state.phase = 'paused';
+  audio.pauseBgm();
   overlay('Run paused', 'Hold the light', 'Dash and spirit bolts both consume energy. Resume when you are ready.', false, true);
   syncHud();
 }
@@ -318,13 +447,17 @@ function resumeGame() {
   if (state.phase !== 'paused') return;
   hideOverlay();
   state.phase = level.boss.active && !level.boss.defeated ? 'boss' : 'playing';
+  audio.resumeBgm();
   say(level.boss.active ? 'The sentinel is still hunting.' : 'Back into the canopy.', 90);
   syncHud();
 }
 
 function winGame() {
   state.phase = 'won';
-  overlay('Shrine restored', 'Sanctum reclaimed', 'You cleared the stronger Ori-lite build: traversal, pressure, and a boss finale in one compact run.', true, false);
+  audio.setBossMode(false);
+  audio.playWin();
+  audio.stopBgm();
+  overlay('Two shrines restored', 'Sanctum reclaimed', 'You cleared the forest route, crossed the desert ruins, and finished the expanded Ori-lite run.', true, false);
   ui.startButton.textContent = 'Play Again';
   say('The shrine answers. Run complete.', 999999, true);
   syncHud();
@@ -333,6 +466,7 @@ function winGame() {
 function respawn() {
   resetActor();
   player.invuln = 96;
+  audio.playDie();
   say(`Respawn at ${player.checkpointName}`, 140);
   syncHud();
 }
@@ -346,7 +480,10 @@ function hurt(sourceX, amount = 1) {
   camera.shake = 12;
   burst(player.x + player.w / 2, player.y + player.h / 2, '#bfffea', 18, 1.1);
   if (player.health <= 0) respawn();
-  else say('Spirit hit. Recover your rhythm.', 80);
+  else {
+    audio.playHit();
+    say('Spirit hit. Recover your rhythm.', 80);
+  }
   syncHud();
 }
 
@@ -357,6 +494,7 @@ function activateCheckpoint(checkpoint) {
   player.spawnX = checkpoint.x;
   player.spawnY = checkpoint.y - 38;
   player.checkpointName = checkpoint.name;
+  audio.playCheckpoint();
   burst(checkpoint.x + 20, checkpoint.y - 16, '#fff0a3', 16);
   say(`Checkpoint reached: ${checkpoint.name}`, 160);
   syncHud();
@@ -372,27 +510,47 @@ function spendEnergy(cost) {
   return true;
 }
 
+function getShotVector() {
+  const upHeld = keys.has('ArrowUp') || keys.has('KeyW');
+  const rightHeld = keys.has('ArrowRight') || keys.has('KeyD');
+  const leftHeld = keys.has('ArrowLeft') || keys.has('KeyA');
+
+  if (upHeld && rightHeld) return { dx: 0.72, dy: -0.72 };
+  if (upHeld && leftHeld) return { dx: -0.72, dy: -0.72 };
+  if (upHeld) return { dx: 0, dy: -1 };
+  return { dx: player.facing, dy: 0 };
+}
+
 function fireShot() {
   if (player.fireCooldown > 0 || ['intro', 'paused', 'won'].includes(state.phase) || !spendEnergy(14)) return;
+  audio.unlock();
+  audio.playShoot();
+  const aim = getShotVector();
+  const speed = 10;
   player.fireCooldown = 14;
-  state.shots.push({ x: player.x + player.w / 2, y: player.y + 18, vx: player.facing * 10, life: 78, r: 5, dmg: 1 });
-  burst(player.x + player.facing * 16, player.y + 18, '#e7ffd2', 8);
+  state.shots.push({ x: player.x + player.w / 2, y: player.y + 18, vx: aim.dx * speed, vy: aim.dy * speed, life: 78, r: 5, dmg: 1, fromPlayer: true });
+  burst(player.x + aim.dx * 16, player.y + 18 + aim.dy * 10, '#e7ffd2', 8);
 }
 
 function dash() {
   if (player.dashCooldown > 0 || player.dashing > 0 || ['intro', 'paused', 'won'].includes(state.phase) || !spendEnergy(20)) return;
+  audio.unlock();
+  audio.playDash();
   player.dashing = 12;
   player.dashCooldown = 54;
   player.vx = player.facing * 11.8;
   player.vy = 0;
   player.invuln = Math.max(player.invuln, 12);
   burst(player.x + player.w / 2, player.y + player.h / 2, '#8af2de', 18, 1.2);
+  trailBurst(player.x + player.w / 2, player.y + player.h / 2, '#c8fff4', player.facing, 10);
 }
 
 function jump() {
   const ground = player.onGround || player.coyote > 0;
   const wall = player.onWall && !player.onGround;
   if (wall) {
+    audio.unlock();
+    audio.playWallJump();
     player.vy = -11.5;
     player.vx = -player.wallDir * 6.5;
     player.jumpsLeft = 1;
@@ -402,6 +560,9 @@ function jump() {
     return;
   }
   if (!ground && player.jumpsLeft <= 0) return;
+  audio.unlock();
+  if (ground) audio.playJump();
+  else audio.playDoubleJump();
   player.vy = -player.jumpPower;
   player.jumpsLeft = ground ? 1 : player.jumpsLeft - 1;
   player.onGround = false;
@@ -484,33 +645,38 @@ function updatePlayer() {
     if (wisp.found || !circleRectOverlap(wisp, player)) return;
     wisp.found = true;
     state.wisps += 1;
+    audio.playWispCollect();
     player.energy = Math.min(player.maxEnergy, player.energy + 28);
     burst(wisp.x, wisp.y, '#fff6b5', 18, 1.2);
-    if (state.wisps >= WORLD.requiredWisps && !state.gateOpen) {
+    if (state.wisps >= level.requiredWisps && !state.gateOpen) {
       state.gateOpen = true;
-      say('Shrine Gate is open. Cross the sanctum verge.', 240);
+      audio.playWispAllCollected();
+      say(isDesertStage() ? 'Final sanctum is open. Cross the dunes.' : 'Shrine Gate is open. Cross the sanctum verge.', 240);
     } else {
-      say(`Wisp recovered ${state.wisps}/${WORLD.requiredWisps}`, 110);
+      say(`Wisp recovered ${state.wisps}/${level.requiredWisps}`, 110);
     }
     syncHud();
   });
 
-  if (state.gateOpen && !level.boss.awakened && player.x > WORLD.bossGateX) {
+  if (state.gateOpen && !level.boss.awakened && player.x > level.bossGateX) {
     level.boss.awakened = true;
     level.boss.active = true;
     state.phase = 'boss';
     state.bossLock = true;
-    player.spawnX = 3420;
-    player.spawnY = 388;
-    player.checkpointName = 'Sanctum Verge';
-    level.checkpoints.forEach(cp => { cp.active = cp.name === 'Sanctum Verge'; });
+    audio.playBossAwaken();
+    audio.setBossMode(true);
+    const finalCheckpoint = level.checkpoints[level.checkpoints.length - 1];
+    player.spawnX = finalCheckpoint.x;
+    player.spawnY = finalCheckpoint.y - 38;
+    player.checkpointName = finalCheckpoint.name;
+    level.checkpoints.forEach(cp => { cp.active = cp.name === finalCheckpoint.name; });
     camera.shake = 18;
-    say('Shrine Sentinel awakened. Break the core.', 260);
+    say(isDesertStage() ? 'Sun sentinel awakened. Break the core.' : 'Shrine Sentinel awakened. Break the core.', 260);
     syncHud();
   }
 
-  if (state.bossLock) player.x = Math.max(WORLD.bossGateX - 40, player.x);
-  player.x = Math.max(0, Math.min(WORLD.width - player.w, player.x));
+  if (state.bossLock) player.x = Math.max(level.bossGateX - 40, player.x);
+  player.x = Math.max(0, Math.min(level.width - player.w, player.x));
 }
 
 function enemyShot(x, y, tx, ty, speed, color) {
@@ -541,7 +707,7 @@ function updateBoss() {
   if (!boss.active || boss.defeated) return;
   boss.cooldown = Math.max(0, boss.cooldown - 1);
   boss.phase = boss.hp <= boss.maxHp / 2 ? 2 : 1;
-  const tx = Math.max(WORLD.bossGateX + 90, Math.min(WORLD.width - 120, player.x + (player.x < boss.x ? 120 : -120)));
+  const tx = Math.max(level.bossGateX + 90, Math.min(level.width - 120, player.x + (player.x < boss.x ? 120 : -120)));
   const ty = 130 + Math.sin(state.time / 24) * 24;
   boss.vx += (tx - boss.x) * 0.005;
   boss.vy += (ty - boss.y) * 0.005;
@@ -570,7 +736,7 @@ function updateBoss() {
       burst(boss.x + boss.w / 2, boss.y + boss.h / 2, '#fff1af', 18, 1.4);
     } else {
       boss.cooldown = 42;
-      for (let i = 0; i < 5; i += 1) enemyShot(boss.x + boss.w / 2, boss.y + boss.h / 2, WORLD.bossGateX + 110 + i * 155, 470, 4.6, '#ffdb8f');
+      for (let i = 0; i < 5; i += 1) enemyShot(boss.x + boss.w / 2, boss.y + boss.h / 2, level.bossGateX + 110 + i * 155, 470, 4.6, '#ffdb8f');
     }
   }
   if (rectsOverlap(player, boss)) hurt(boss.x + boss.w / 2);
@@ -579,15 +745,18 @@ function updateBoss() {
 function updateShots() {
   state.shots = state.shots.filter(shot => {
     shot.x += shot.vx;
+    shot.y += shot.vy ?? 0;
     shot.life -= 1;
     const rect = { x: shot.x - shot.r, y: shot.y - shot.r, w: shot.r * 2, h: shot.r * 2 };
     const enemy = level.enemies.find(entry => entry.alive && rectsOverlap(rect, entry));
     if (enemy) {
       enemy.hp -= shot.dmg;
       enemy.dir *= -1;
+      audio.playEnemyHit();
       burst(shot.x, shot.y, '#fff8c8', 10);
       if (enemy.hp <= 0) {
         enemy.alive = false;
+        audio.playEnemyDie();
         player.energy = Math.min(player.maxEnergy, player.energy + 16);
         burst(enemy.x + enemy.w / 2, enemy.y + enemy.h / 2, '#8af2de', 24, 1.3);
       }
@@ -595,6 +764,7 @@ function updateShots() {
     }
     if (level.boss.active && !level.boss.defeated && rectsOverlap(rect, level.boss)) {
       level.boss.hp -= shot.dmg;
+      audio.playBossHit();
       camera.shake = Math.max(camera.shake, 6);
       burst(shot.x, shot.y, '#fff3b2', 12);
       if (level.boss.hp <= 0) {
@@ -602,13 +772,15 @@ function updateShots() {
         level.boss.defeated = true;
         level.boss.active = false;
         state.bossLock = false;
+        audio.setBossMode(false);
+        audio.playBossDefeated();
         burst(level.boss.x + level.boss.w / 2, level.boss.y + level.boss.h / 2, '#b4ffea', 42, 1.6);
         say('Sentinel broken. Climb to the shrine.', 240);
       }
       syncHud();
       return false;
     }
-    return shot.life > 0 && shot.x > 0 && shot.x < WORLD.width;
+    return shot.life > 0 && shot.x > 0 && shot.x < level.width && shot.y > -40 && shot.y < WORLD.height + 40;
   });
 }
 
@@ -622,7 +794,7 @@ function updateEnemyShots() {
       burst(shot.x, shot.y, shot.color, 8);
       return false;
     }
-    return shot.life > 0 && shot.x > 0 && shot.x < WORLD.width && shot.y > -40 && shot.y < WORLD.height + 40;
+    return shot.life > 0 && shot.x > 0 && shot.x < level.width && shot.y > -40 && shot.y < WORLD.height + 40;
   });
 }
 
@@ -638,9 +810,9 @@ function updateParticles() {
 
 function updateCamera() {
   let target = player.x - canvas.width * 0.36;
-  if (state.bossLock) target = ((WORLD.bossGateX + WORLD.shrineX) / 2) - canvas.width / 2;
+  if (state.bossLock) target = ((level.bossGateX + level.shrineX) / 2) - canvas.width / 2;
   camera.x += (target - camera.x) * 0.08;
-  camera.x = Math.max(0, Math.min(WORLD.width - canvas.width, camera.x));
+  camera.x = Math.max(0, Math.min(level.width - canvas.width, camera.x));
   camera.shake *= 0.84;
 }
 
@@ -652,10 +824,13 @@ function update() {
     if (level.boss.active) updateBoss();
     updateShots();
     updateEnemyShots();
-    if (level.boss.defeated && rectsOverlap(player, { x: level.shrine.x - 20, y: level.shrine.y, w: level.shrine.w + 40, h: level.shrine.h + 80 })) winGame();
+    if (level.boss.defeated && rectsOverlap(player, { x: level.shrine.x - 20, y: level.shrine.y, w: level.shrine.w + 40, h: level.shrine.h + 80 })) {
+      if (state.stageIndex < STAGE_ORDER.length - 1) advanceStage();
+      else winGame();
+    }
   }
   if (player.dashing > 0) {
-    trailBurst(player.x + player.w / 2, player.y + player.h / 2, PALETTE.crystal, player.facing, 3);
+    trailBurst(player.x + player.w / 2, player.y + player.h / 2, stageAccentColor(), player.facing, 3);
   }
   updateParticles();
   updateCamera();
@@ -667,6 +842,40 @@ function update() {
 }
 
 function bg() {
+  if (isDesertStage()) {
+    const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    sky.addColorStop(0, '#f5deb0');
+    sky.addColorStop(0.45, '#f3d3a1');
+    sky.addColorStop(1, '#e9c38b');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const sun = ctx.createRadialGradient(canvas.width * 0.78, 90, 8, canvas.width * 0.78, 90, 120);
+    sun.addColorStop(0, 'rgba(255, 244, 205, 0.95)');
+    sun.addColorStop(0.35, 'rgba(243, 201, 119, 0.28)');
+    sun.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = sun;
+    ctx.beginPath();
+    ctx.arc(canvas.width * 0.78, 90, 120, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let i = 0; i < 4; i += 1) {
+      const depth = 0.1 + i * 0.12;
+      const off = camera.x * depth;
+      ctx.fillStyle = [PALETTE.surfaceStrong, PALETTE.sandLight, PALETTE.sandDeep, PALETTE.brass][i];
+      ctx.beginPath();
+      ctx.moveTo(-240 - off, canvas.height);
+      for (let x = -240; x <= canvas.width + 340; x += 160) {
+        const peak = 250 + i * 44 + Math.sin((x + off + i * 90) / 120) * (18 + i * 6);
+        ctx.quadraticCurveTo(x + 70, peak, x + 160, canvas.height);
+      }
+      ctx.lineTo(canvas.width + 420, canvas.height);
+      ctx.closePath();
+      ctx.fill();
+    }
+    return;
+  }
+
   if (drawRepeatingAsset('bgFarForest', 0, 1600, 540, 0.06, 1)) {
     drawCloudBank(120, 98, 1.1, 0.1);
     drawCloudBank(500, 162, 0.86, 0.14);
@@ -900,6 +1109,18 @@ function drawShrineArch(worldX, groundY, scale = 1) {
 }
 
 function drawWorldProps() {
+  if (isDesertStage()) {
+    drawRuinColumn(340, 470, 1);
+    drawLanternPost(620, 468, 0.82);
+    drawDesertArch(1120, 470, 0.9);
+    drawCrystalCluster(1760, 470, 0.82);
+    drawRuinColumn(2330, 470, 1.1);
+    drawDesertArch(3140, 470, 1);
+    drawLanternPost(3520, 468, 0.86);
+    drawCrystalCluster(4230, 470, 1);
+    drawBossArenaDecor();
+    return;
+  }
   drawGreatTree(214, 470, 0.92);
   drawLanternPost(548, 468, 0.8);
   drawCrystalCluster(932, 470, 1);
@@ -909,7 +1130,27 @@ function drawWorldProps() {
   drawLanternPost(2268, 468, 0.74);
   drawCrystalCluster(2694, 470, 1.12);
   drawShrineArch(3338, 470, 0.96);
+  drawGreatTree(4260, 470, 0.82);
+  drawLanternPost(4510, 468, 0.8);
+  drawCrystalCluster(4920, 470, 1.08);
   drawBossArenaDecor();
+}
+
+function drawDesertArch(worldX, groundY, scale = 1) {
+  const x = worldX - camera.x;
+  ctx.fillStyle = PALETTE.stone;
+  ctx.fillRect(x - 60 * scale, groundY - 92 * scale, 18 * scale, 92 * scale);
+  ctx.fillRect(x + 42 * scale, groundY - 92 * scale, 18 * scale, 92 * scale);
+  ctx.fillRect(x - 72 * scale, groundY - 108 * scale, 144 * scale, 16 * scale);
+  ctx.fillStyle = PALETTE.brass;
+  ctx.beginPath();
+  ctx.moveTo(x - 60 * scale, groundY - 94 * scale);
+  ctx.quadraticCurveTo(x, groundY - 156 * scale, x + 60 * scale, groundY - 94 * scale);
+  ctx.lineTo(x + 42 * scale, groundY - 94 * scale);
+  ctx.quadraticCurveTo(x, groundY - 138 * scale, x - 42 * scale, groundY - 94 * scale);
+  ctx.closePath();
+  ctx.fill();
+  glow(worldX, groundY - 82 * scale, 26 * scale, 'rgba(243, 201, 119, 0.18)');
 }
 
 function drawForegroundCanopy() {
@@ -975,13 +1216,21 @@ function drawFireflyField(depth = 0.22) {
 }
 
 function drawBossArenaDecor() {
-  if (camera.x > WORLD.bossGateX - canvas.width && (state.gateOpen || level.boss.awakened || level.boss.defeated)) {
-    drawCrystalCluster(3650, 470, 1.36);
-    drawCrystalCluster(3898, 470, 1.12);
-    drawLanternPost(3732, 468, 0.86);
-    drawLanternPost(4018, 468, 0.86);
-    drawRuinColumn(3604, 470, 1.1);
-    drawRuinColumn(4048, 470, 1.1);
+  if (camera.x > level.bossGateX - canvas.width && (state.gateOpen || level.boss.awakened || level.boss.defeated)) {
+    if (isDesertStage()) {
+      drawDesertArch(level.bossGateX + 80, 470, 1.08);
+      drawRuinColumn(level.shrineX - 110, 470, 1.18);
+      drawRuinColumn(level.shrineX + 120, 470, 1.18);
+      drawLanternPost(level.bossGateX + 190, 468, 0.86);
+      drawLanternPost(level.shrineX + 30, 468, 0.86);
+      return;
+    }
+    drawCrystalCluster(level.bossGateX + 370, 470, 1.36);
+    drawCrystalCluster(level.shrineX - 62, 470, 1.12);
+    drawLanternPost(level.bossGateX + 452, 468, 0.86);
+    drawLanternPost(level.shrineX + 58, 468, 0.86);
+    drawRuinColumn(level.bossGateX + 324, 470, 1.1);
+    drawRuinColumn(level.shrineX + 88, 470, 1.1);
   }
 }
 
@@ -999,22 +1248,22 @@ function drawRuinColumn(worldX, groundY, scale = 1) {
 
 function drawPlatform(p) {
   const x = p.x - camera.x;
-  ctx.fillStyle = PALETTE.woodDeep;
+  ctx.fillStyle = isDesertStage() ? PALETTE.stone : PALETTE.woodDeep;
   ctx.fillRect(x, p.y, p.w, p.h);
-  ctx.fillStyle = PALETTE.forest;
+  ctx.fillStyle = isDesertStage() ? PALETTE.sandDeep : PALETTE.forest;
   ctx.fillRect(x, p.y, p.w, 10);
-  ctx.fillStyle = PALETTE.stone;
+  ctx.fillStyle = isDesertStage() ? PALETTE.brass : PALETTE.stone;
   for (let i = 12; i < p.w; i += 48) {
     ctx.fillRect(x + i, p.y + 20, 14, 8);
   }
   for (let i = 0; i < p.w; i += 26) {
-    ctx.fillStyle = 'rgba(197, 220, 125, 0.34)';
+    ctx.fillStyle = isDesertStage() ? 'rgba(243, 201, 119, 0.28)' : 'rgba(197, 220, 125, 0.34)';
     ctx.beginPath();
     ctx.arc(x + i + 8, p.y + 8, 6, 0, Math.PI * 2);
     ctx.fill();
   }
   for (let i = 18; i < p.w - 10; i += 74) {
-    ctx.strokeStyle = PALETTE.forest;
+    ctx.strokeStyle = isDesertStage() ? PALETTE.brass : PALETTE.forest;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(x + i, p.y + p.h * 0.3);
@@ -1022,16 +1271,16 @@ function drawPlatform(p) {
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(x + i - 4, p.y + p.h * 0.82, 3, 0, Math.PI * 2);
-    ctx.fillStyle = PALETTE.meadowLight;
+    ctx.fillStyle = isDesertStage() ? PALETTE.sandLight : PALETTE.meadowLight;
     ctx.fill();
   }
 }
 
 function drawHazard(h) {
   const x = h.x - camera.x;
-  ctx.fillStyle = PALETTE.woodDeep;
+  ctx.fillStyle = isDesertStage() ? PALETTE.stone : PALETTE.woodDeep;
   ctx.fillRect(x, h.y + 18, h.w, h.h - 18);
-  ctx.fillStyle = PALETTE.roof;
+  ctx.fillStyle = isDesertStage() ? PALETTE.brass : PALETTE.roof;
   for (let i = 0; i < h.w; i += 18) {
     ctx.beginPath();
     ctx.moveTo(x + i, h.y + h.h);
@@ -1044,13 +1293,13 @@ function drawHazard(h) {
 
 function drawCheckpoint(cp) {
   const x = cp.x - camera.x;
-  ctx.strokeStyle = cp.active ? PALETTE.lantern : 'rgba(141, 217, 208, 0.56)';
+  ctx.strokeStyle = cp.active ? PALETTE.lantern : (isDesertStage() ? 'rgba(184, 145, 89, 0.56)' : 'rgba(141, 217, 208, 0.56)');
   ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(x, cp.y);
   ctx.lineTo(x, cp.y - 72);
   ctx.stroke();
-  glow(cp.x + 4, cp.y - 68, 26, cp.active ? 'rgba(243, 201, 119, 0.82)' : 'rgba(141, 217, 208, 0.52)');
+  glow(cp.x + 4, cp.y - 68, 26, cp.active ? 'rgba(243, 201, 119, 0.82)' : (isDesertStage() ? 'rgba(184, 145, 89, 0.36)' : 'rgba(141, 217, 208, 0.52)'));
 }
 
 function drawWisp(w) {
@@ -1058,8 +1307,8 @@ function drawWisp(w) {
   const x = w.x - camera.x;
   const pulse = 12 + Math.sin((state.time + w.x) / 18) * 2;
   const g = ctx.createRadialGradient(x, w.y, 0, x, w.y, 26);
-  g.addColorStop(0, 'rgba(243, 201, 119, 0.94)');
-  g.addColorStop(0.45, 'rgba(141, 217, 208, 0.52)');
+  g.addColorStop(0, isDesertStage() ? 'rgba(243, 201, 119, 0.94)' : 'rgba(243, 201, 119, 0.94)');
+  g.addColorStop(0.45, isDesertStage() ? 'rgba(201, 164, 107, 0.52)' : 'rgba(141, 217, 208, 0.52)');
   g.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = g;
   ctx.beginPath();
@@ -1148,7 +1397,7 @@ function drawBoss() {
 }
 
 function drawShrine() {
-  if (drawSceneAsset('shrineGate', level.shrine.x - 44, level.shrine.y - 10, 198, 186, 1, 0.98)) {
+  if (!isDesertStage() && drawSceneAsset('shrineGate', level.shrine.x - 44, level.shrine.y - 10, 198, 186, 1, 0.98)) {
     drawLanternPost(level.shrine.x - 34, level.shrine.y + level.shrine.h + 20, 0.72);
     drawLanternPost(level.shrine.x + level.shrine.w + 18, level.shrine.y + level.shrine.h + 20, 0.72);
     return;
@@ -1156,14 +1405,14 @@ function drawShrine() {
   const x = level.shrine.x - camera.x;
   ctx.fillStyle = PALETTE.stone;
   ctx.fillRect(x, level.shrine.y + 24, level.shrine.w, level.shrine.h);
-  ctx.fillStyle = PALETTE.woodDeep;
+  ctx.fillStyle = isDesertStage() ? PALETTE.brass : PALETTE.woodDeep;
   ctx.beginPath();
   ctx.moveTo(x - 8, level.shrine.y + 40);
   ctx.lineTo(x + level.shrine.w / 2, level.shrine.y - 6);
   ctx.lineTo(x + level.shrine.w + 8, level.shrine.y + 40);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = level.boss.defeated ? PALETTE.lantern : (state.gateOpen ? PALETTE.crystal : PALETTE.forest);
+  ctx.fillStyle = level.boss.defeated ? PALETTE.lantern : (state.gateOpen ? (isDesertStage() ? PALETTE.sandLight : PALETTE.crystal) : (isDesertStage() ? PALETTE.sandDeep : PALETTE.forest));
   ctx.fillRect(x + 18, level.shrine.y + 40, level.shrine.w - 36, level.shrine.h - 26);
   drawLanternPost(level.shrine.x - 34, level.shrine.y + level.shrine.h + 20, 0.72);
   drawLanternPost(level.shrine.x + level.shrine.w + 18, level.shrine.y + level.shrine.h + 20, 0.72);
@@ -1187,9 +1436,12 @@ function drawShots(collection) {
     ctx.fill();
     ctx.strokeStyle = PALETTE.cloud;
     ctx.lineWidth = 1.2;
+    const angle = Math.atan2(shot.vy ?? 0, shot.vx ?? 1);
+    const tailX = Math.cos(angle) * 9;
+    const tailY = Math.sin(angle) * 9;
     ctx.beginPath();
-    ctx.moveTo(x - 9, shot.y);
-    ctx.lineTo(x - 2, shot.y - 2);
+    ctx.moveTo(x - tailX, shot.y - tailY);
+    ctx.lineTo(x - tailX * 0.25, shot.y - tailY * 0.25);
     ctx.stroke();
   });
 }
@@ -1238,6 +1490,22 @@ function drawPlayer() {
   ctx.restore();
 }
 
+function drawAimGuide() {
+  if (state.phase === 'intro' || state.phase === 'paused' || state.phase === 'won') return;
+  const aim = getShotVector();
+  const x = player.x + player.w / 2 - camera.x;
+  const y = player.y + 18;
+  ctx.save();
+  ctx.strokeStyle = isDesertStage() ? 'rgba(184, 145, 89, 0.55)' : 'rgba(141, 217, 208, 0.5)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + aim.dx * 34, y + aim.dy * 34);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawParticles() {
   state.particles.forEach(p => {
     const x = p.x - camera.x;
@@ -1257,6 +1525,18 @@ function drawParticles() {
 }
 
 function drawForeground() {
+  if (isDesertStage()) {
+    ctx.fillStyle = PALETTE.sandDeep;
+    ctx.fillRect(0, 505, canvas.width, 35);
+    for (let i = -60; i < canvas.width + 120; i += 90) {
+      ctx.fillStyle = 'rgba(184, 145, 89, 0.5)';
+      ctx.beginPath();
+      ctx.moveTo(i, canvas.height);
+      ctx.quadraticCurveTo(i + 22, 470, i + 44, canvas.height);
+      ctx.fill();
+    }
+    return;
+  }
   if (drawRepeatingAsset('bgForegroundRoots', 310, 1600, 230, 0.32, 0.94)) {
     drawFireflyField(0.28);
     drawForegroundCanopy();
@@ -1278,9 +1558,9 @@ function drawForeground() {
 function drawHint() {
   ctx.fillStyle = PALETTE.ink;
   ctx.font = '600 18px Outfit';
-  let text = 'Collect 6 wisps to awaken the shrine';
+  let text = isDesertStage() ? 'Gather desert wisps and reach the sunken sanctum' : 'Collect wisps to awaken the shrine';
   if (state.phase === 'boss') text = 'Break the Shrine Sentinel core';
-  if (level.boss.defeated) text = 'Climb to the shrine and end the run';
+  if (level.boss.defeated) text = state.stageIndex < STAGE_ORDER.length - 1 ? 'Climb to the shrine to enter the desert' : 'Climb to the shrine and end the run';
   ctx.fillText(text, 28, 510);
 }
 
@@ -1294,7 +1574,7 @@ function drawAtmosphereOverlay() {
 
   const vignette = ctx.createRadialGradient(canvas.width * 0.5, canvas.height * 0.35, 120, canvas.width * 0.5, canvas.height * 0.55, canvas.width * 0.72);
   vignette.addColorStop(0, 'rgba(0,0,0,0)');
-  vignette.addColorStop(1, 'rgba(53, 90, 71, 0.10)');
+  vignette.addColorStop(1, isDesertStage() ? 'rgba(185, 146, 92, 0.10)' : 'rgba(53, 90, 71, 0.10)');
   ctx.fillStyle = vignette;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
@@ -1302,11 +1582,18 @@ function drawAtmosphereOverlay() {
 function render() {
   bg();
   cameraBegin();
-  glow(330, 320, 150, 'rgba(141, 217, 208, 0.18)');
-  glow(1360, 290, 180, 'rgba(243, 201, 119, 0.16)');
-  glow(2450, 260, 180, 'rgba(141, 217, 208, 0.16)');
-  glow(3410, 240, 210, 'rgba(124, 200, 242, 0.16)');
-  glow(3970, 210, 240, level.boss.active ? 'rgba(243, 201, 119, 0.20)' : 'rgba(141, 217, 208, 0.12)');
+  if (isDesertStage()) {
+    glow(420, 320, 150, 'rgba(243, 201, 119, 0.16)');
+    glow(1540, 260, 180, 'rgba(184, 145, 89, 0.14)');
+    glow(3140, 240, 200, 'rgba(243, 201, 119, 0.14)');
+    glow(level.shrineX + 10, 210, 240, level.boss.active ? 'rgba(243, 201, 119, 0.22)' : 'rgba(184, 145, 89, 0.14)');
+  } else {
+    glow(330, 320, 150, 'rgba(141, 217, 208, 0.18)');
+    glow(1360, 290, 180, 'rgba(243, 201, 119, 0.16)');
+    glow(2450, 260, 180, 'rgba(141, 217, 208, 0.16)');
+    glow(3410, 240, 210, 'rgba(124, 200, 242, 0.16)');
+    glow(level.shrineX + 10, 210, 240, level.boss.active ? 'rgba(243, 201, 119, 0.20)' : 'rgba(141, 217, 208, 0.12)');
+  }
   drawWorldProps();
   level.platforms.forEach(drawPlatform);
   level.walls.forEach(drawPlatform);
@@ -1319,6 +1606,7 @@ function render() {
   drawShots(state.shots);
   drawShots(state.enemyShots);
   drawPlayer();
+  drawAimGuide();
   drawParticles();
   drawForeground();
   cameraEnd();
@@ -1334,7 +1622,7 @@ function loop() {
 
 document.addEventListener('keydown', event => {
   keys.add(event.code);
-  if (['Space', 'ArrowUp', 'KeyW'].includes(event.code)) {
+  if (event.code === 'Space') {
     event.preventDefault();
     player.jumpBuffer = 10;
   }
@@ -1363,12 +1651,37 @@ document.addEventListener('keydown', event => {
 
 document.addEventListener('keyup', event => {
   keys.delete(event.code);
-  if (['Space', 'ArrowUp', 'KeyW'].includes(event.code) && player.vy < 0) player.vy *= player.jumpCut;
+  if (event.code === 'Space' && player.vy < 0) player.vy *= player.jumpCut;
 });
 
 ui.startButton.addEventListener('click', startRun);
 ui.resumeButton.addEventListener('click', resumeGame);
 
+function syncMuteButton() {
+  if (!ui.muteButton) return;
+  ui.muteButton.textContent = audio.isMuted() ? '🔇' : '🔊';
+  ui.muteButton.title = audio.isMuted() ? 'Unmute (M)' : 'Mute (M)';
+}
+
+if (ui.muteButton) {
+  ui.muteButton.addEventListener('click', () => {
+    audio.unlock();
+    audio.toggleMute();
+    syncMuteButton();
+  });
+}
+
+// Add M key to toggle mute
+document.addEventListener('keydown', event => {
+  if (event.code === 'KeyM') {
+    event.preventDefault();
+    audio.unlock();
+    audio.toggleMute();
+    syncMuteButton();
+  }
+}, { capture: false });
+
+syncMuteButton();
 primeSceneAssets();
 resetRun(true);
 loop();

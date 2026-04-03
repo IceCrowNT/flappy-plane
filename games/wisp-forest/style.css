@@ -211,6 +211,28 @@ body::before {
   pointer-events: none;
 }
 
+.hud-mute {
+  pointer-events: all;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--theme-border);
+  border-radius: 999px;
+  background: rgba(252, 248, 234, 0.92);
+  box-shadow: var(--theme-shadow-soft);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.hud-mute:hover {
+  transform: scale(1.1);
+  background: rgba(243, 201, 119, 0.36);
+}
+
 .hud-card {
   min-width: 148px;
   padding: 11px 14px;
